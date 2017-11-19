@@ -130,8 +130,9 @@ app.post("/gps/register", function(req, res){
             // SUCCESS
             else {
                 responseJSON.success = true;
-                responseJSON.message = "GPS value of " + gps_entry.value + 
-                                        " was saved with ID " + gps_entry._id;
+                responseJSON.message = "GPS value with (latitude, longitude): (" + 
+                                        gps_entry.latitude + ", " + gps_entry.longitude +
+                                        ") and was saved with ID " + gps_entry._id;
                 res.status(201).send(JSON.stringify(responseJSON));
             }
         });
