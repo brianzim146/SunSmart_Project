@@ -36,25 +36,6 @@ var UV_Entry = mongoose.model("UV_Entry", uvSchema);
 
 
 
-app.get("/touch", function(req, res) {
-    var uv_entry = new UV_Entry({
-        value: 10
-    });
-
-    id = -1;
-
-    console.log("arrived");
-
-    uv_entry.save(function(err, uv_entry) {
-    	console.log("in the callback function");
-    	console.log(uv_entry);
-        id = uv_entry._id;
-    	res.send("Just created UV entry w/ ID: " + uv_entry._id);
-    });
-
-});
-
-
 
 app.get("/uv/all", function(req, res){
     UV_Entry.find({}, function(err, entries) {
@@ -66,10 +47,38 @@ app.get("/uv/all", function(req, res){
             res.status(400).send(JSON.stringify(errorMsg));
         }
         else {
-            var response = { uv_entries: [] };
+            var response = { 
+                uv_entries: []
+            };
 
             for (var entry of entries) {
                 response.uv_entries.push(entry);
+            }
+
+            res.status(200).send(JSON.stringify(response));
+        }
+    });
+});
+
+
+
+
+app.get("/gps/all", function(req, res) {
+    GPS_Entry.find({}, function(err, entries) {
+        if (err) {
+            var errorMsg = {
+                "message": err
+            };
+
+            res.status(400).send(JSON.stringify(errorMsg));
+        }
+        else {
+            var response = {
+                gps_entries: []
+            };
+
+            for (var entry of entries) {
+                response.gps_entries.push(entry);
             }
 
             res.status(200).send(JSON.stringify(response));
