@@ -8,7 +8,9 @@ var app = express();
 app.use(express.static("public"));
 
 // attaching body-parser middleware
+//app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 //
 mongoose.connect("mongodb://localhost/mydb");
@@ -71,7 +73,7 @@ app.post("/uv/register", function(req, res){
         message: ""
     };
 
-    if (req.body.hasOwnProperty("value")) {
+    if (req.body.value) {
         var uv_entry = new UV_Entry({
             value: req.body.value
         });
@@ -96,6 +98,7 @@ app.post("/uv/register", function(req, res){
 
     //missing parameter
     else {
+	console.log(req.body);
         responseJSON.message = "Missing value property";
         res.status(400).send(JSON.stringify(responseJSON));
     }
