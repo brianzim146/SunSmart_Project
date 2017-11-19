@@ -54,14 +54,27 @@ app.get("/touch", function(req, res) {
 
 });
 
+
+
 app.get("/uv/all", function(req, res){
     UV_Entry.find({}, function(err, entries) {
-    	entries.forEach(function(entry) {
-    	    console.log(entry);
-    	});
-    });
+        if (err) {
+            var errorMsg = {
+                "message": err
+            };
 
-    res.send("Did it work?");
+            res.status(400).send(JSON.stringify(errorMsg));
+        }
+        else {
+            var response = { uv_entries: [] };
+
+            for (var entry of entries) {
+                response.uv_entries.push(entry);
+            }
+
+            res.status(200).send(JSON.stringify(response));
+        }
+    });
 });
 
 
