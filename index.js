@@ -39,13 +39,27 @@ app.get("/touch", function(req, res) {
         value: 10
     });
 
-    var id = -1;
+    id = -1;
+
+    console.log("arrived");
 
     uv_entry.save(function(err, uv_entry) {
+	console.log("in the callback function");
+	console.log(uv_entry);
         id = uv_entry._id;
+	res.send("Just created UV entry w/ ID: " + uv_entry._id);
     });
 
-    res.send("Just created UV entry with ID: " + id);
+});
+
+app.get("/uv/all", function(req, res){
+    UV_Entry.find({}, function(err, entries) {
+	entries.forEach(function(entry) {
+	    console.log(entry);
+	});
+    });
+
+    res.send("Did it work?");
 });
 
 
