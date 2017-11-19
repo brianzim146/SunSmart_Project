@@ -39,11 +39,13 @@ app.get("/touch", function(req, res) {
         value: 10
     });
 
+    var id = -1;
+
     uv_entry.save(function(err, uv_entry) {
-        res.send("Just created UV entry with ID: " + uv_entry._id);
+        id = uv_entry._id;
     });
 
-    res.send("it didn't work...");
+    res.send("Just created UV entry with ID: " + id);
 });
 
 
