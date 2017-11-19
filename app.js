@@ -107,5 +107,46 @@ app.post("/uv/register", function(req, res){
 
 
 
+app.post("/gps/register", function(req, res){
+    var responseJSON = {
+        success: false,
+        message: ""
+    };
+
+    if (req.body.latitude && req.body.longitude) {
+        var gps_entry = new GPS_Entry({
+            latitude: req.body.latitude,
+            longitude: req.body.longitude
+        });
+
+        gps_entry.save(function(err, gps_entry) {
+            // couldn't save to DB
+            if (err) {
+                console.log("Error: " + err);
+                responseJSON.message = err;
+                res.status(400).send(JSON.stringify(responseJSON));
+            }
+            
+            // SUCCESS
+            else {
+                responseJSON.success = true;
+                responseJSON.message = "GPS value of " + gps_entry.value + 
+                                        " was saved with ID " + gps_entry._id;
+                res.status(201).send(JSON.stringify(responseJSON));
+            }
+        });
+    }
+
+    //missing parameter
+    else {
+    console.log(req.body);
+        responseJSON.message = "Missing latitude or longitude property";
+        res.status(400).send(JSON.stringify(responseJSON));
+    }
+});
+
+
+
+
 
 app.listen(3000);
