@@ -7,29 +7,49 @@
 	}
 	
 	table, th, td {
-		border: 2px solid black;
-		padding: 20px;
+		border: 3px solid white;
+		padding: 18px;
+	}
+	
+	#displayUV {
+		float: left;
+		font-weight: bold;
+		background-image: url("https://static.pexels.com/photos/139306/pexels-photo-139306.jpeg");
+		color: white;
+		padding: 5px;
+		width: 480px;
+		font-size: 20px;
+		margin-left: 75px;
+	    text-align: center;
+		border-collapse: collapse;
+		font-family: "Gill Sans", sans-serif;
+	}
+	
+	#displayGPS {
+		float: right;
+		font-weight: bold;
+		color: white;
+		background-image: url("https://static.pexels.com/photos/139306/pexels-photo-139306.jpeg");
+		padding: 5px;
+		width: 550px;
+		font-size: 20px;
+		margin-right: 75px;
+	    text-align: center;
+		border-collapse: collapse;
+		font-family: "Gill Sans", sans-serif;
 	}
 	
 	table caption {
 		font-size: 32px;
 		margin-bottom: 10px;
 		font-weight: bold;
-		color: #967F33;
-	}
-	
-	table {
-		width: 490px;
-		font-size: 25px;
-		margin-left: 450px;
-	    text-align: center;
-		border-collapse: collapse;
-		font-family: "Gill Sans", sans-serif;
+		color: black;
+		//color: #967F33;
 	}
 	
 	h1 {
 		width: 400px;
-		margin-left: 510px;
+		margin-left: 440px;
 		margin-top: 50px;
 		margin-bottom: 50px;
 		font-size: 50px;
@@ -40,8 +60,8 @@
 	p {
 		width: 560px;
 		font-size: 22px;
-		margin-left: 420px;
-		margin-right: 275px;
+		margin-left: 350px;
+		margin-right: 300px;
 		margin-bottom: 50px;
 		font-family: "Times New Roman", Times, serif;
 	}
@@ -53,26 +73,169 @@
 	
     <head>
         <title>SunSmart Project</title>
+		<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
     </head>
 	
 	<body>
+		
 	    <h1>Sensor's Data</h1>
-		<p>    This page displays the data from both the sensors. Whenever the web page picks up 
-		   a change in the sensor output, the new data will be outputed onto this page. If the data
-		   is not updating, please try refreshing the page.</p>
-		<table>
-			<caption>UV Data For a Given Location</caption>
-			<tr>
-				<th>UV Reading</th>
-				<th>Latitude</th>
-				<th>Longitude</th>
-			</tr>
-			<tr>
-				<td>#</td>
-				<td>#</td>
-				<td>#</td>
-			</tr>	
+		
+		<p>    This page displays the data from both the sensors. The web page updates every 2 seconds.
+		   No need to refresh the page! Whenever a new input id found in the database, it will be displayed
+		   in the tables below. As seen, one table is for the UV data and another is for the GPS data.</p>
+		   
+		<table id="displayUV">
+			<caption>UV Data</caption>
 		</table>
+		
+		<table id="displayGPS">
+			<caption>GPS Data</caption>
+		</table>
+		
+		<script>
+			setInterval(updateUV, 2000);
+			setInterval(updateGPS, 2000);
+		    
+			function updateUV() {
+			
+				var elem = document.getElementById("test");
+				var table = document.getElementById("displayUV");
+				
+				//Create new table based on the new input
+				var newTable = document.createElement("table");
+				newTable.setAttribute("id", "displayUV");
+				
+				var newCaption = document.createElement("caption");
+				var textCaption = document.createTextNode("UV Data");
+				
+				newCaption.appendChild(textCaption);		
+				newTable.appendChild(newCaption);
+				
+				var tr1 = document.createElement("tr");
+				
+				var th1 = document.createElement("th");
+				var th2 = document.createElement("th");
+				
+				var textTh1 = document.createTextNode("Timestamp");
+				var textTh2 = document.createTextNode("UV Reading");
+				
+				th1.appendChild(textTh1);
+				th2.appendChild(textTh2);
+				
+				tr1.appendChild(th1);
+				tr1.appendChild(th2);
+				
+				newTable.appendChild(tr1);
+		
+				var xhr = new XMLHttpRequest();
+				xhr.addEventListener("load", function() {
+				
+					var data = JSON.parse(xhr.response);  
+					
+					var length = data["uv_entries"].length;
+					
+					for (var i = 0; i < length; i++) {
+					
+						var tr = document.createElement('tr');   
+
+						var td1 = document.createElement('td');
+						var td2 = document.createElement('td');
+
+						var text1 = document.createTextNode(data["uv_entries"][i]["time"]);
+						var text2 = document.createTextNode(data["uv_entries"][i]["value"]);
+
+						td1.appendChild(text1);
+						td2.appendChild(text2);
+						
+						tr.appendChild(td1);
+						tr.appendChild(td2);
+
+						newTable.appendChild(tr);
+					}
+					
+					table.parentNode.replaceChild(newTable, table);
+				});
+		
+				xhr.open("GET", "http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/uv/all?");
+				xhr.send();
+			}
+			
+			//Updates the GPS table
+			function updateGPS() {
+			
+				var elem = document.getElementById("test");
+				var table = document.getElementById("displayGPS");
+				
+				//Create new table
+				var newTable = document.createElement("table");
+				newTable.setAttribute("id", "displayGPS");
+				
+				var newCaption = document.createElement("caption");
+				var textCaption = document.createTextNode("GPS Data");
+				
+				newCaption.appendChild(textCaption);		
+				newTable.appendChild(newCaption);
+				
+				var tr1 = document.createElement("tr");
+				
+				var th1 = document.createElement("th");
+				var th2 = document.createElement("th");
+				var th3 = document.createElement("th");
+				
+				var textTh1 = document.createTextNode("Timestamp");
+				var textTh2 = document.createTextNode("Latitude");
+				var textTh3 = document.createTextNode("Longitude");
+				
+				th1.appendChild(textTh1);
+				th2.appendChild(textTh2);
+				th3.appendChild(textTh3);
+				
+				tr1.appendChild(th1);
+				tr1.appendChild(th2);
+				tr1.appendChild(th3);
+				
+				newTable.appendChild(tr1);
+		
+				var xhr = new XMLHttpRequest();
+				
+				xhr.addEventListener("load", function() {
+				
+					var data = JSON.parse(xhr.response);  	
+					var length = data["gps_entries"].length;
+					
+					for (var i = 0; i < length; i++) {
+					
+						var tr = document.createElement('tr');   
+
+						var td1 = document.createElement("td");
+						var td2 = document.createElement("td");
+						var td3 = document.createElement("td");
+
+						var text1 = document.createTextNode(data["gps_entries"][i]["time"]);
+						var text2 = document.createTextNode(data["gps_entries"][i]["latitude"]);
+						var text3 = document.createTextNode(data["gps_entries"][i]["longitude"]);
+
+						td1.appendChild(text1);
+						td2.appendChild(text2);
+						td3.appendChild(text3);
+						
+						tr.appendChild(td1);
+						tr.appendChild(td2);
+						tr.appendChild(td3);
+
+						newTable.appendChild(tr);
+					}
+					
+					table.parentNode.replaceChild(newTable, table);
+				});
+		
+				xhr.open("GET", "http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/gps/all?");
+				xhr.send();
+			}
+			
+			updateUV();
+			updateGPS();
+		</script>
 	</body>
 	
 </html>
