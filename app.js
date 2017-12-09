@@ -71,7 +71,7 @@ app.post("/user/register", function(req, res) {
         var user_entry = new userEntry({
             email: req.body.email,
             password: req.body.password,
-            deviceIds: [req.bosy.deviceId]
+            deviceIds: [req.body.deviceId]
         });
 
         user_entry.save(function(err, user_entry) {
@@ -86,7 +86,7 @@ app.post("/user/register", function(req, res) {
             else {
                 responseJSON.success = true;
                 responseJSON.message = user_entry.email + " has registered device " + 
-                    user_entry.deviceId;
+                    user_entry.deviceIds[0];
                 res.status(201).send(JSON.stringify(responseJSON));
             }
         });
