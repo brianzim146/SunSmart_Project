@@ -52,6 +52,35 @@ var UV_Entry = mongoose.model("UV_Entry", uvSchema);
 
 
 
+var userSchema = new mongoose.Schema({
+    deviceIds:  [String],
+    email:      String,
+    password:   String
+});
+
+var userEntry = mongoose.model("userEntry", userSchema);
+
+
+app.post("/user/register", function(req, res) {
+    var responseJSON = {
+        success: false,
+        message: ""
+    };
+    
+    if (req.body.email && req.body.password && req.body.deviceId) {
+
+    }
+
+    //missing parameter
+    else {
+        console.log(req.body);
+        responseJSON.message = "Missing registration field(s)";
+        res.status(400).json(responseJSON);
+    }
+});
+
+
+
 
 
 app.get("/uv/all", function(req, res){
@@ -137,7 +166,7 @@ app.post("/uv/register", function(req, res){
 
     //missing parameter
     else {
-	console.log(req.body);
+        console.log(req.body);
         responseJSON.message = "Missing value property";
         res.status(400).send(JSON.stringify(responseJSON));
     }
