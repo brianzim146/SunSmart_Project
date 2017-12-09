@@ -1,0 +1,141 @@
+<style>
+	body {
+		background: url("BoatPic.jpg") no-repeat fixed;
+		-webkit-background-size: cover;
+		-moz-background-size: cover;
+		-o-background-size: cover;
+		background-size: cover;
+		font-family: "Georgia";
+	}
+	
+	h1 {
+		text-align: center;
+		margin-top: 3%;
+		color: #FFFFFF;
+		font-size: 220%;
+	}
+	
+	#login {
+		background-color: #fefefe;
+		margin: 5% auto; /* 15% from the top and centered */
+		margin-top: 2%;
+		margin-bottom: 2%;
+		padding: 2%;
+		border: 3px solid #888;
+		width: 60%; 
+	}
+	
+	#login label {
+		font-size: 200%;
+		padding-right: 1%;
+	}
+	
+	#login input {
+		font-size: 120%;
+		width: 100%;
+	}
+	
+	#login #first, #login #second {
+		margin-bottom: 1%;
+	}
+	
+	#login button {
+		margin-top: 3%;
+		/*width: 16%;*/
+		width: 120px;
+		padding-top: 0.5%;
+		padding-bottom: 0.5%;
+		font-size: 125%;
+		font-family: "Georgia";
+	}
+
+	#login #loginButton {
+		border-color: #333;
+		 border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+		background-color: #ddd;
+		color: #333;
+	}
+	
+	#login #loginButton:hover {
+		background-color: #90EE90;
+		color: #000000;
+		font-weight: bold;
+	}
+	
+	.nav {
+		overflow: hidden;
+		padding-top: 1%;
+		width: 50%;
+		margin-left: 25%;
+		border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+	}
+
+	/* Style the links inside the navigation bar */
+	.nav form {
+		float: center;
+		display: block;
+		text-align: center;
+		font-size: 100%;
+		text-color: "white";
+	}
+	
+	.nav input[type="submit"]:hover {
+		background-color: #90EE90;
+		color: #000000;
+		font-weight: bold;
+	}
+	
+	.buttons {
+		width: 100%;
+		padding: 1%;
+		border-color: #333;
+		 border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+		background-color: #FFFFFF;
+		color: #000000;
+	}
+
+</style>
+
+
+
+<html>
+	<meta charset="UTF-8">
+	
+	<head>
+        <title>SunSmart Account Creation</title>
+    </head>
+	
+	<h1>Create Your New SunSmart Account</h1>
+	
+	<body>
+		<form id="login" action="http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/user/register" method="post">
+		
+			<label>Email:</label>
+			<input id="first" type="text" placeholder="Enter Email" name="email" required>			
+			<label>Password:</label>
+			<input id="second" type="text" placeholder="Enter Password" name="password" required>
+			<label>Device ID:</label>
+			<input id="third" type="text" placeholder="Enter Device ID" name="deviceId" required>
+			
+			<button id="loginButton" type="submit">Login</button>
+		</form>
+		
+		<div class="nav">
+			<form id="welcomePage" action="http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/MainPage.html">
+				<input class="buttons" type="submit" value="To Welcome Page">
+			</form>
+			<form id="loginPage" action="http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/LoginPage.html">
+				<input class="buttons" type="submit" value="Have an Account">
+			</form>
+			<form id="exampleAccount" action="http://www.espn.com/fantasy/football/">
+				<input class="buttons" type="submit" value="Example Account">
+			</form>	
+		</div>
+	</body>
+<html>
