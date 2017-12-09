@@ -118,7 +118,7 @@ app.post("/user/register", function(req, res) {
 
 
 
-app.post("user/login", function(req, res) {
+app.post("/user/login", function(req, res) {
     var responseJSON = {
         success: false,
         token: "",
@@ -126,6 +126,7 @@ app.post("user/login", function(req, res) {
     };
 
     if (req.body.email && req.body.password) {
+	responseJSON.success = true;
         responseJSON.message = "You are logged in.";
         res.status(200).json(responseJSON);
     }
