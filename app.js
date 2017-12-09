@@ -58,7 +58,7 @@ var userSchema = new mongoose.Schema({
     password:   String
 });
 
-var userEntry = mongoose.model("userEntry", userSchema);
+var User = mongoose.model("User", userSchema);
 
 
 app.post("/user/register", function(req, res) {
@@ -125,15 +125,31 @@ app.post("user/login", function(req, res) {
         message: ""
     };
 
+    var sentResponse = false;
+
     if (req.body.email && req.body.password) {
-        responseJSON.message = "You are logged in.";
-        res.status(200).json(responseJSON);
+        User.find({ email: req.body.email, password: req.body.password }, 
+            function(err, user) {
+                if (err) {
+                    responseJSON.message = "Email or password are incorrect\n" + err;
+                    if (!sentResponse) res.status(400).json(responseJSON);
+                    sentResponse = true;
+                }
+
+                else {
+                    responseJSON.message = "Logged in as " user.email;
+                    responseJSON.success = true;
+                    if (!sentResponse) res.status(200).json(responseJSON);
+                    sentResponse = true;
+                }
+        });
     }
 
     //missing parameter
     else {
         responseJSON.message = "Missing login field(s)";
-        res.status(400).json(responseJSON);
+        if (!sentResponse) res.status(400).json(responseJSON);
+        sentResponse = true;
     }
 });
 
