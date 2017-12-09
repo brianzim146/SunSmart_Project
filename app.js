@@ -73,6 +73,7 @@ app.post("/user/register", function(req, res) {
         var numberRE =      /\d/;
         var symbolRE =      /[.,;:<>\/\\!@#$%^&*()\-`~_=+]/;
 
+        // check for strong password
         if (!capitalRE.test(req.body.password) || !lowercaseRE.test(req.body.password) ||
             !numberRE.test(req.body.password) || !symbolRE.test(req.body.password)) {
 
@@ -80,39 +81,58 @@ app.post("/user/register", function(req, res) {
             res.status(400).json(responseJSON);
         }
 
-	else {
+    	else {
 
+            var user_entry = new userEntry({
+                email: req.body.email,
+                password: req.body.password,
+                deviceIds: [req.body.deviceId]
+            });
 
-
-
-        var user_entry = new userEntry({
-            email: req.body.email,
-            password: req.body.password,
-            deviceIds: [req.body.deviceId]
-        });
-
-        user_entry.save(function(err, user_entry) {
-            // couldn't save to DB
-            if (err) {
-                console.log("Error: " + err);
-                responseJSON.message = err;
-                res.status(400).json(responseJSON);
-            }
-            
-            // SUCCESS
-            else {
-                responseJSON.success = true;
-                responseJSON.message = user_entry.email + " has registered device " + 
-                    user_entry.deviceIds[0];
-                res.status(201).send(JSON.stringify(responseJSON));
-            }
-        });
-	}
+            user_entry.save(function(err, user_entry) {
+                // couldn't save to DB
+                if (err) {
+                    console.log("Error: " + err);
+                    responseJSON.message = err;
+                    res.status(400).json(responseJSON);
+                }
+                
+                // SUCCESS
+                else {
+                    responseJSON.success = true;
+                    responseJSON.message = user_entry.email + " has registered device " + 
+                        user_entry.deviceIds[0];
+                    res.status(201).json(responseJSON);
+                }
+            });
+    	}
     }
 
     //missing parameter
     else {
         responseJSON.message = "Missing registration field(s)";
+        res.status(400).json(responseJSON);
+    }
+});
+
+
+
+
+app.post("user/login", function(req, res) {
+    var responseJSON = {
+        success: false,
+        token: "",
+        message: ""
+    };
+
+    if (req.body.email && req.body.password) {
+        responseJSON.message = "You are logged in.";
+        res.status(200).json(responseJSON);
+    }
+
+    //missing parameter
+    else {
+        responseJSON.message = "Missing login field(s)";
         res.status(400).json(responseJSON);
     }
 });
