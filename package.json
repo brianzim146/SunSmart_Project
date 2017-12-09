@@ -1,5 +1,5 @@
 {
-  "name": "sunsmart_project",
+  "name": "ls",
   "version": "1.0.0",
   "description": "ECE 413 semester project",
   "main": "index.js",
@@ -20,5 +20,6 @@
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
     "mongoose": "^4.13.4"
-  }
+  },
+  "devDependencies": {}
 }

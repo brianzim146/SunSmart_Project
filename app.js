@@ -73,12 +73,16 @@ app.post("/user/register", function(req, res) {
         var numberRE =      /\d/;
         var symbolRE =      /[.,;:<>\/\\!@#$%^&*()\-`~_=+]/;
 
-        if (!capitalRE.test(req.body.email) || !lowercaseRE.test(req.body.email) ||
-            !numberRE.test(req.body.email) || !symbolRE.test(req.body.email)) {
+        if (!capitalRE.test(req.body.password) || !lowercaseRE.test(req.body.password) ||
+            !numberRE.test(req.body.password) || !symbolRE.test(req.body.password)) {
 
             responseJSON.message = "password not strong enough";
             res.status(400).json(responseJSON);
         }
+
+	else {
+
+
 
 
         var user_entry = new userEntry({
@@ -103,6 +107,7 @@ app.post("/user/register", function(req, res) {
                 res.status(201).send(JSON.stringify(responseJSON));
             }
         });
+	}
     }
 
     //missing parameter
