@@ -68,6 +68,19 @@ app.post("/user/register", function(req, res) {
     };
 
     if (req.body.email && req.body.password && req.body.deviceId) {
+        var capitalRE =     /[A-Z]/;
+        var lowercaseRE =   /[a-z]/;
+        var numberRE =      /\d/;
+        var symbolRE =      /[.,;:<>\/\\!@#$%^&*()\-`~_=+]/;
+
+        if (!capitalRE.test(req.body.email) || !lowercaseRE.test(req.body.email) ||
+            !numberRE.test(req.body.email) || !symbolRE.test(req.body.email)) {
+
+            responseJSON.message = "password not strong enough";
+            res.status(400).json(responseJSON);
+        }
+
+
         var user_entry = new userEntry({
             email: req.body.email,
             password: req.body.password,
@@ -94,7 +107,6 @@ app.post("/user/register", function(req, res) {
 
     //missing parameter
     else {
-        console.log(req.body);
         responseJSON.message = "Missing registration field(s)";
         res.status(400).json(responseJSON);
     }
