@@ -66,9 +66,30 @@ app.post("/user/register", function(req, res) {
         success: false,
         message: ""
     };
-    
-    if (req.body.email && req.body.password && req.body.deviceId) {
 
+    if (req.body.email && req.body.password && req.body.deviceId) {
+        var user_entry = new userEntry({
+            email: req.body.email,
+            password: req.body.password,
+            deviceIds: [req.bosy.deviceId]
+        });
+
+        user_entry.save(function(err, user_entry) {
+            // couldn't save to DB
+            if (err) {
+                console.log("Error: " + err);
+                responseJSON.message = err;
+                res.status(400).json(responseJSON);
+            }
+            
+            // SUCCESS
+            else {
+                responseJSON.success = true;
+                responseJSON.message = user_entry.email + " has registered device " + 
+                    user_entry.deviceId;
+                res.status(201).send(JSON.stringify(responseJSON));
+            }
+        });
     }
 
     //missing parameter
