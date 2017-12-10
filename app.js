@@ -94,7 +94,7 @@ app.post("/user/register", function(req, res) {
                     return sendResponse(res, 401, false, err);
                 }
                 else if (user) {
-                    return sendResponse(res, 401, false, "User" + user.email + " already exists", { alreadyExists: true });
+                    return sendResponse(res, 401, false, "User " + user.email + " already exists", { alreadyExists: true });
                 }
 
                 // user does not exist -- good
