@@ -85,7 +85,7 @@ app.post("/user/register", function(req, res) {
             !numberRE.test(req.body.password) || !symbolRE.test(req.body.password)) {
 
             responseJSON.message = "password not strong enough";
-            res.status(400).json(responseJSON);
+            res.status(401).json(responseJSON);
         }
 
     	else {
@@ -100,7 +100,7 @@ app.post("/user/register", function(req, res) {
                 // couldn't save to DB
                 if (err) {
                     responseJSON.message = err;
-                    res.status(400).json(responseJSON);
+                    res.status(401).json(responseJSON);
                 }
                 
                 // SUCCESS
@@ -119,7 +119,7 @@ app.post("/user/register", function(req, res) {
     //missing parameter
     else {
         responseJSON.message = "Missing registration field(s)";
-        res.status(400).json(responseJSON);
+        res.status(401).json(responseJSON);
     }
 });
 
@@ -145,37 +145,36 @@ app.post("/user/login", function(req, res) {
                 // STILLLLL FIX ME
                 if (err) {
                     responseJSON.message = "Email or password are incorrect\n" + err;
-                    if (!sentResponse) res.status(400).json(responseJSON);
+                    if (!sentResponse) res.status(401).json(responseJSON);
+                    sentResponse = true;
+                }
+
+                else if (user) {
+                    var payload = { email: user.email };
+                    var token = jwt.encode(payload, secret);
+                    
+                    responseJSON.token = token;
+                    responseJSON.message = "Logged in as " + user.email;
+                    responseJSON.success = true;
+                    responseJSON.redirect = "AccountHomePage.html";
+                    
+                    if (!sentResponse) res.status(201).json(responseJSON);
                     sentResponse = true;
                 }
 
                 else {
-                    if (user == null) {
-                        responseJSON.message = "Email or password are incorrect\n"
-                        if (!sentResponse) res.status(400).json(responseJSON);
-                        sentResponse = true;
-                    }
-                    else {
-                        var payload = { email: user.email };
-                        var token = jwt.encode(payload, secret);
-                        
-                        responseJSON.token = token;
-                        responseJSON.message = "Logged in as " + user.email;
-                        responseJSON.success = true;
-                        responseJSON.redirect = "AccountHomePage.html";
-                        
-                        if (!sentResponse) res.status(200).json(responseJSON);
-                        sentResponse = true;
-                    }
-                    
+                    responseJSON.message = "Email or password are incorrect\n"
+                    if (!sentResponse) res.status(401).json(responseJSON);
+                    sentResponse = true;
                 }
-        });
+            }   
+        );
     }
 
     //missing parameter
     else {
         responseJSON.message = "Missing login field(s)";
-        if (!sentResponse) res.status(400).json(responseJSON);
+        if (!sentResponse) res.status(401).json(responseJSON);
         sentResponse = true;
     }
 });
@@ -203,9 +202,11 @@ app.put("/user/update", function(req, res) {
         User.findOne({ email: decoded.email }, 
             function(err, user) {
                 if (user) {
+
+                    // they must include which operation they would like
+                    // to perform in their request
                     if (!req.body.operation) {
-                        responseJSON.message = "Missing login field(s)";
-                        return res.status(401).json(responseJSON);
+                        return sendResponse(res, 401, false, "Missing operation field");
                     }
 
                     if (req.body.operation == CHANGE_PASSWORD) {
@@ -222,8 +223,9 @@ app.put("/user/update", function(req, res) {
                             return sendResponse(res, 401, false, "Missing device ID field");
                         }
 
+                        console.log(user.deviceIds);
                         user.deviceIds.push(req.body.deviceId);
-
+                        console.log(user.deviceIds);
                         return saveData(res, user, user.email + "'s new device has been added");
                     }
                     else if (req.body.operation == REMOVE_DEVICE) {
@@ -242,7 +244,6 @@ app.put("/user/update", function(req, res) {
                         else {
                             return sendResponse(res, 401, false, req.body.deviceId + " was not found in your device list");
                         }
-
                     }
 
                 }
@@ -269,7 +270,7 @@ app.get("/uv/all", function(req, res){
                 "message": err
             };
 
-            res.status(400).send(JSON.stringify(errorMsg));
+            res.status(401).send(JSON.stringify(errorMsg));
         }
         else {
             var response = { 
@@ -280,7 +281,7 @@ app.get("/uv/all", function(req, res){
                 response.uv_entries.push(entry);
             }
 
-            res.status(200).send(JSON.stringify(response));
+            res.status(201).send(JSON.stringify(response));
         }
     });
 });
@@ -295,7 +296,7 @@ app.get("/gps/all", function(req, res) {
                 "message": err
             };
 
-            res.status(400).send(JSON.stringify(errorMsg));
+            res.status(401).send(JSON.stringify(errorMsg));
         }
         else {
             var response = {
@@ -306,7 +307,7 @@ app.get("/gps/all", function(req, res) {
                 response.gps_entries.push(entry);
             }
 
-            res.status(200).send(JSON.stringify(response));
+            res.status(201).send(JSON.stringify(response));
         }
     });
 });
@@ -330,7 +331,7 @@ app.post("/uv/register", function(req, res){
             if (err) {
                 console.log("Error: " + err);
                 responseJSON.message = err;
-                res.status(400).send(JSON.stringify(responseJSON));
+                res.status(401).send(JSON.stringify(responseJSON));
             }
             
             // SUCCESS
@@ -347,7 +348,7 @@ app.post("/uv/register", function(req, res){
     else {
         console.log(req.body);
         responseJSON.message = "Missing value property";
-        res.status(400).send(JSON.stringify(responseJSON));
+        res.status(401).send(JSON.stringify(responseJSON));
     }
 });
 
@@ -371,7 +372,7 @@ app.post("/gps/register", function(req, res){
             if (err) {
                 console.log("Error: " + err);
                 responseJSON.message = err;
-                res.status(400).send(JSON.stringify(responseJSON));
+                res.status(401).send(JSON.stringify(responseJSON));
             }
             
             // SUCCESS
@@ -389,7 +390,7 @@ app.post("/gps/register", function(req, res){
     else {
     console.log(req.body);
         responseJSON.message = "Missing latitude or longitude property";
-        res.status(400).send(JSON.stringify(responseJSON));
+        res.status(401).send(JSON.stringify(responseJSON));
     }
 });
 
