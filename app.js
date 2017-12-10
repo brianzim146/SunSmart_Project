@@ -89,6 +89,14 @@ app.post("/user/register", function(req, res) {
         }
 
     	else {
+            User.findOne({ email: req.body.email }, function(err, user) {
+                if (err) {
+                    return sendResponse(res, 401, false, err);
+                }
+                else if (user) {
+                    return sendResponse(res, 401, false, "User" + user.email + " already exists", { alreadyExists: true });
+                }
+            });
 
             var user = new User({
                 email: req.body.email,
@@ -433,11 +441,15 @@ function strongPassword(password) {
 
 
 
-function sendResponse(res, status, success, message) {
+function sendResponse(res, status, success, message, extraFields = {}) {
     var responseJSON = {
         success: success,
         message: message
     };
+
+    for (var field in extraFields) {
+        responseJSON[field] = extraFields.field;
+    }
 
     return res.status(status).json(responseJSON);
 }
