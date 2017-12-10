@@ -369,7 +369,7 @@ app.post("/data/register", function(req, res) {
                     // found the zip code
                     else {
                         var data = JSON.parse(body);
-                        var zip = data.resourceSets[0].resources[0].address.postalCode);
+                        var zip = data.resourceSets[0].resources[0].address.postalCode;
 
                         var dataEntry = new Data ({
                             user_id: user._id,
