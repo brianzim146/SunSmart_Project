@@ -139,6 +139,10 @@ app.post("/user/login", function(req, res) {
     if (req.body.email && req.body.password) {
         User.findOne({ email: req.body.email, password: req.body.password }, 
             function(err, user) {
+
+                // FIX ME FIX ME
+
+                // STILLLLL FIX ME
                 if (err) {
                     responseJSON.message = "Email or password are incorrect\n" + err;
                     if (!sentResponse) res.status(400).json(responseJSON);
@@ -146,16 +150,24 @@ app.post("/user/login", function(req, res) {
                 }
 
                 else {
-                    var payload = { email: user.email };
-                    var token = jwt.encode(payload, secret);
+                    if (user == null) {
+                        responseJSON.message = "Email or password are incorrect\n"
+                        if (!sentResponse) res.status(400).json(responseJSON);
+                        sentResponse = true;
+                    }
+                    else {
+                        var payload = { email: user.email };
+                        var token = jwt.encode(payload, secret);
+                        
+                        responseJSON.token = token;
+                        responseJSON.message = "Logged in as " + user.email;
+                        responseJSON.success = true;
+                        responseJSON.redirect = "AccountHomePage.html";
+                        
+                        if (!sentResponse) res.status(200).json(responseJSON);
+                        sentResponse = true;
+                    }
                     
-                    responseJSON.token = token;
-                    responseJSON.message = "Logged in as " + user.email;
-                    responseJSON.success = true;
-                    responseJSON.redirect = "AccountHomePage.html";
-                    
-                    if (!sentResponse) res.status(200).json(responseJSON);
-                    sentResponse = true;
                 }
         });
     }
@@ -187,6 +199,7 @@ app.put("/user/update", function(req, res) {
     try {
         var decoded = jwt.decode(token, secret);
 
+        // find specific user
         User.findOne({ email: decoded.email }, 
             function(err, user) {
                 if (user) {
@@ -233,6 +246,8 @@ app.put("/user/update", function(req, res) {
                     }
 
                 }
+
+                // user was not in DB
                 else {
                     return sendResponse(res, 401, false, "User " + decoded.email + " not found");
                 }
