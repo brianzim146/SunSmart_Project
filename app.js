@@ -227,15 +227,25 @@ app.put("/user/update", function(req, res) {
                             return sendResponse(res, 401, false, "Missing device ID field");
                         }
 
-                        console.log(user.deviceIds);
+                        console.log(user);
+			var ids = user.deviceIds;
+			console.log(ids);
+			console.log(req.body.deviceId);
+			ids.push(req.body.deviceId);
                         // user.deviceIds.push(req.body.deviceId);
-                        // console.log(user.deviceIds);
+                        console.log(ids);
 
-                        User.update({ _id: user._id }, { $push: { deviceIds: req.body.deviceId } });
-
-                        console.log(user.deviceIds);
+                        User.update({ _id: user._id }, { $push: { deviceIds: req.body.deviceId+"" } });
+			user.markModified('deviceIds');
+			user.save(function(err, user) {
+			    console.log("saved: " + err);
+			});
+			User.findOne({email: user.email}, function(err, user) {
+			    console.log(user);
+			});
+                        //console.log(user);
                         return sendResponse(res, 201, true, user.email + "'s new device has been added");
-                        // return saveData(res, user, user.email + "'s new device has been added");
+                        //return saveData(res, user, user.email + "'s new device has been added");
                     }
                     else if (req.body.operation == REMOVE_DEVICE) {
                         if (!req.body.deviceId) {
