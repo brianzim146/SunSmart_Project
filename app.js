@@ -99,7 +99,6 @@ app.post("/user/register", function(req, res) {
             user.save(function(err, user) {
                 // couldn't save to DB
                 if (err) {
-                    console.log("Error: " + err);
                     responseJSON.message = err;
                     res.status(400).json(responseJSON);
                 }
@@ -153,7 +152,7 @@ app.post("/user/login", function(req, res) {
                     responseJSON.token = token;
                     responseJSON.message = "Logged in as " + user.email;
                     responseJSON.success = true;
-                    responseJSON.redirect = 'https://stackoverflow.com/questions/36434978/how-to-redirect-to-another-page-in-node-js';
+                    responseJSON.redirect = "AccountHomePage.html";
                     
                     if (!sentResponse) res.status(200).json(responseJSON);
                     sentResponse = true;
@@ -198,49 +197,49 @@ app.put("/user/update", function(req, res) {
 
                     if (req.body.operation == CHANGE_PASSWORD) {
                         if (!req.body.newPassword) {
-                            responseJSON.message = "Missing password field";
-                            return res.status(401).json(responseJSON);
+                            return sendResponse(res, 401, false, "Missing password field");
                         }
 
                         user.password = req.body.newPassword;
 
-                        user.save(function(err, user) {
-                            if (err) {
-                                responseJSON.message = "Error: " + err;
-                                return res.status(401).json(responseJSON);
-                            }
-                            else {
-                                responseJSON.message = user.email + "'s new password has been saved."
-                                responseJSON.success = true;
-                                return res.status(201).json(responseJSON);
-                            }
-                        });
+                        return saveData(user, user.email + "'s new password has been saved");
                     }
                     else if (req.body.operation == ADD_DEVICE) {
                         if (!req.body.deviceId) {
-                            responseJSON.message = "Missing device ID field";
-                            return res.status(401).json(responseJSON);
+                            return sendResponse(res, 401, false, "Missing device ID field");
                         }
+
+                        user.deviceIds.push(req.body.deviceId);
+
+                        return saveData(user, user.email + "'s new device has been added");
                     }
                     else if (req.body.operation == REMOVE_DEVICE) {
                         if (!req.body.deviceId) {
-                            responseJSON.message = "Missing device ID field";
-                            return res.status(401).json(responseJSON);
+                            return sendResponse(res, 401, false, "Missing device ID field");
                         }
+
+                        var index = user.deviceIds.indexOf(req.body.deviceId);
+
+                        if (index > -1) {
+                            user.deviceIds.splice(index, 1);
+
+                            return saveData(user, req.body.deviceId + " has been removed from " + 
+                                user.email + "'s list of devices");
+                        }
+                        else {
+                            return sendResponse(res, 401, false, req.body.deviceId + " was not found in your device list");
+                        }
+
                     }
 
-
-
-
-                    res.status(200).json({ message: "hello world!" });
                 }
                 else {
-                    res.status(401).json({ error: "User " + decoded.email + " not found." });
+                    return sendResponse(res, 401, false, "User " + decoded.email + " not found");
                 }
         });
     }
     catch (ex) {
-        res.status(401).json({ error: "Invalid JWT" });
+        return sendResponse(res, 401, false, "Invalid JWT");
     }
 });
 
@@ -378,6 +377,48 @@ app.post("/gps/register", function(req, res){
         res.status(400).send(JSON.stringify(responseJSON));
     }
 });
+
+
+
+function strongPassword(password) {
+    var capitalRE =     /[A-Z]/;
+    var lowercaseRE =   /[a-z]/;
+    var numberRE =      /\d/;
+    var symbolRE =      /[.,;:<>\/\\!@#$%^&*()\-`~_=+]/;
+
+    if (!capitalRE.test(password) || !lowercaseRE.test(password) ||
+        !numberRE.test(password) || !symbolRE.test(password)) {
+
+        return false;
+    }
+
+    else return true;
+}
+
+
+
+
+function sendResponse(res, status, success, message) {
+    var responseJSON = {
+        success: success,
+        message: message
+    };
+
+    return res.status(status).json(responseJSON);
+}
+
+
+
+function saveData(user, successMessage) {
+    user.save(function(err, user) {
+        if (err) {
+            return sendResponse(res, 401, false, "Error: " + err);
+        }
+        else {
+            return sendResponse(res, 201, true, successMessage);
+        }
+    });
+}
 
 
 
