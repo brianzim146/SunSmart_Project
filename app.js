@@ -17,9 +17,10 @@ mongoose.connect("mongodb://localhost/mydb");
 
 var secret = "Zman is Alpha";
 
-const CHANGE_PASSWORD   = 0;
-const ADD_DEVICE        = 1;
-const REMOVE_DEVICE     = 2;
+const CHANGE_EMAIL      = 0;
+const CHANGE_PASSWORD   = 1;
+const ADD_DEVICE        = 2;
+const REMOVE_DEVICE     = 3;
 
 
 // This is to enable cross-origin access
@@ -224,7 +225,17 @@ app.put("/user/update", function(req, res) {
                         return sendResponse(res, 401, false, "Missing operation field");
                     }
 
-                    if (req.body.operation == CHANGE_PASSWORD) {
+                    else if (req.body.operation == CHANGE_EMAIL) {
+                        if (!req.body.newEmail) {
+                            return sendResponse(res, 401, false, "Missing email field");
+                        }
+
+                        user.email = req.body.newEmail;
+
+                        return saveData(res, user, user.email + "'s email has been changed to " + req.body.newEmail);
+                    }
+
+                    else if (req.body.operation == CHANGE_PASSWORD) {
                         if (!req.body.newPassword) {
                             return sendResponse(res, 401, false, "Missing password field");
                         }
@@ -239,21 +250,21 @@ app.put("/user/update", function(req, res) {
                         }
 
                         console.log(user);
-			var ids = user.deviceIds;
-			console.log(ids);
-			console.log(req.body.deviceId);
-			ids.push(req.body.deviceId);
+            			var ids = user.deviceIds;
+            			console.log(ids);
+            			console.log(req.body.deviceId);
+            			ids.push(req.body.deviceId);
                         // user.deviceIds.push(req.body.deviceId);
                         console.log(ids);
 
                         User.update({ _id: user._id }, { $push: { deviceIds: req.body.deviceId+"" } });
-			user.markModified('deviceIds');
-			user.save(function(err, user) {
-			    console.log("saved: " + err);
-			});
-			User.findOne({email: user.email}, function(err, user) {
-			    console.log(user);
-			});
+            			user.markModified('deviceIds');
+            			user.save(function(err, user) {
+            			    console.log("saved: " + err);
+            			});
+            			User.findOne({email: user.email}, function(err, user) {
+            			    console.log(user);
+            			});
                         //console.log(user);
                         return sendResponse(res, 201, true, user.email + "'s new device has been added");
                         //return saveData(res, user, user.email + "'s new device has been added");
