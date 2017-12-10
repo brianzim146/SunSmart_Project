@@ -83,13 +83,13 @@ app.post("/user/register", function(req, res) {
 
     	else {
 
-            var user_entry = new userEntry({
+            var user = new User({
                 email: req.body.email,
                 password: req.body.password,
                 deviceIds: [req.body.deviceId]
             });
 
-            user_entry.save(function(err, user_entry) {
+            user.save(function(err, user) {
                 // couldn't save to DB
                 if (err) {
                     console.log("Error: " + err);
@@ -100,8 +100,8 @@ app.post("/user/register", function(req, res) {
                 // SUCCESS
                 else {
                     responseJSON.success = true;
-                    responseJSON.message = user_entry.email + " has registered device " + 
-                        user_entry.deviceIds[0];
+                    responseJSON.message = user.email + " has registered device " + 
+                        user.deviceIds[0];
                     res.status(201).json(responseJSON);
                 }
             });
@@ -128,7 +128,7 @@ app.post("/user/login", function(req, res) {
     var sentResponse = false;
 
     if (req.body.email && req.body.password) {
-        User.find({ email: req.body.email, password: req.body.password }, 
+        User.findOne({ email: req.body.email, password: req.body.password }, 
             function(err, user) {
                 if (err) {
                     responseJSON.message = "Email or password are incorrect\n" + err;
@@ -137,7 +137,8 @@ app.post("/user/login", function(req, res) {
                 }
 
                 else {
-                    responseJSON.message = "Logged in as " user.email;
+		    console.log(user);
+                    responseJSON.message = "Logged in as " + user.email;
                     responseJSON.success = true;
                     if (!sentResponse) res.status(200).json(responseJSON);
                     sentResponse = true;
