@@ -197,13 +197,36 @@ app.put("/user/update", function(req, res) {
                     }
 
                     if (req.body.operation == CHANGE_PASSWORD) {
+                        if (!req.body.newPassword) {
+                            responseJSON.message = "Missing password field";
+                            return res.status(401).json(responseJSON);
+                        }
 
+                        user.password = req.body.newPassword;
+
+                        user.save(function(err, user) {
+                            if (err) {
+                                responseJSON.message = "Error: " + err;
+                                return res.status(401).json(responseJSON);
+                            }
+                            else {
+                                responseJSON.message = user.email + "'s new password has been saved."
+                                responseJSON.success = true;
+                                return res.status(201).json(responseJSON);
+                            }
+                        });
                     }
                     else if (req.body.operation == ADD_DEVICE) {
-
+                        if (!req.body.deviceId) {
+                            responseJSON.message = "Missing device ID field";
+                            return res.status(401).json(responseJSON);
+                        }
                     }
                     else if (req.body.operation == REMOVE_DEVICE) {
-
+                        if (!req.body.deviceId) {
+                            responseJSON.message = "Missing device ID field";
+                            return res.status(401).json(responseJSON);
+                        }
                     }
 
 
