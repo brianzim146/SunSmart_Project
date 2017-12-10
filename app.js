@@ -139,8 +139,8 @@ app.post("/user/register", function(req, res) {
                                 apiKey: user.apiKey,
                                 redirect: "AccountHomePage.html"
                             };
-
-                            return sendResponse(res, 201, true, user.email + " has registered device " + 
+                            
+			    return sendResponse(res, 201, true, user.email + " has registered device " + 
                                 user.deviceIds[0], responseJSON);
                             
                             // responseJSON.token = token;
