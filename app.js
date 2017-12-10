@@ -17,6 +17,10 @@ mongoose.connect("mongodb://localhost/mydb");
 
 var secret = "Zman is Alpha";
 
+const var CHANGE_PASSWORD   = 0;
+const var ADD_DEVICE        = 1;
+const var REMOVE_DEVICE     = 2;
+
 
 // This is to enable cross-origin access
 app.use(function (req, res, next) {
@@ -66,7 +70,8 @@ var User = mongoose.model("User", userSchema);
 app.post("/user/register", function(req, res) {
     var responseJSON = {
         success: false,
-        message: ""
+        message: "",
+        redirect: ""
     };
 
     if (req.body.email && req.body.password && req.body.deviceId) {
@@ -104,6 +109,8 @@ app.post("/user/register", function(req, res) {
                     responseJSON.success = true;
                     responseJSON.message = user.email + " has registered device " + 
                         user.deviceIds[0];
+                    responseJSON.redirect = "LoginPage.html";
+
                     res.status(201).json(responseJSON);
                 }
             });
@@ -184,10 +191,23 @@ app.put("/user/update", function(req, res) {
         User.findOne({ email: decoded.email }, 
             function(err, user) {
                 if (user) {
-                    if (!req.body.email || !req.body.operation) {
+                    if (!req.body.operation) {
                         responseJSON.message = "Missing login field(s)";
                         return res.status(401).json(responseJSON);
                     }
+
+                    if (req.body.operation == CHANGE_PASSWORD) {
+
+                    }
+                    else if (req.body.operation == ADD_DEVICE) {
+
+                    }
+                    else if (req.body.operation == REMOVE_DEVICE) {
+
+                    }
+
+
+
 
                     res.status(200).json({ message: "hello world!" });
                 }
