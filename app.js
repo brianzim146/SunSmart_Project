@@ -60,12 +60,27 @@ var UV_Entry = mongoose.model("UV_Entry", uvSchema);
 
 
 var userSchema = new mongoose.Schema({
-    deviceIds:  [String],
     email:      String,
-    password:   String
+    password:   String,
+    apiKey:     String,
+    deviceIds:  [String]
 });
 
 var User = mongoose.model("User", userSchema);
+
+
+
+var dataSchema = new mongoose.Schema({
+    userId: String,
+    uv:     Number,
+    zip:    String
+});
+
+var Data = mongoose.model("Data", dataSchema);
+
+
+
+
 
 
 app.post("/user/register", function(req, res) {
@@ -103,6 +118,7 @@ app.post("/user/register", function(req, res) {
                     var user = new User({
                         email: req.body.email,
                         password: req.body.password,
+                        apiKey: getNewApiKey(),
                         deviceIds: [req.body.deviceId]
                     });
 
@@ -117,14 +133,23 @@ app.post("/user/register", function(req, res) {
                         else {
                             var payload = { email: user.email };
                             var token = jwt.encode(payload, secret);
-                            
-                            responseJSON.token = token;
-                            responseJSON.success = true;
-                            responseJSON.message = user.email + " has registered device " + 
-                                user.deviceIds[0];
-                            responseJSON.redirect = "AccountHomePage.html";
 
-                            res.status(201).json(responseJSON);
+                            var responseJSON = {
+                                token: token,
+                                apiKey: user.apiKey,
+                                redirect: "AccountHomePage.html"
+                            };
+
+                            return sendResponse(res, 201, true, user.email + " has registered device " + 
+                                user.deviceIds[0], responseJSON);
+                            
+                            // responseJSON.token = token;
+                            // responseJSON.success = true;
+                            // responseJSON.message = user.email + " has registered device " + 
+                            //     user.deviceIds[0];
+                            // responseJSON.redirect = "AccountHomePage.html";
+
+                            // res.status(201).json(responseJSON);
                         }
                     });
                 }
@@ -199,10 +224,6 @@ app.post("/user/login", function(req, res) {
 
 
 app.put("/user/update", function(req, res) {
-    var responseJSON = {
-        success: false,
-        message: ""
-    };
 
     // Check if the X-Auth header is set
     if (!req.headers["x-auth"]) {
@@ -305,6 +326,48 @@ app.put("/user/update", function(req, res) {
         return sendResponse(res, 401, false, "Invalid JWT");
     }
 });
+
+
+
+
+
+
+
+
+
+
+
+app.post("/data/register", function(req, res) {
+    // check for all fields
+    if (!req.body.uv || !req.body.latitude || !req.body.longitude || 
+        !req.body.apiKey || !req.body.deviceId) {
+        return sendResponse(res, 401, false, "Missing input field(s)");
+    }
+
+    else {
+        User.findOne({ apiKey: req.body.apiKey }, );
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -485,6 +548,20 @@ function saveData(res, user, successMessage) {
             return sendResponse(res, 201, true, successMessage);
         }
     });
+}
+
+
+
+// Function to generate a random apikey consisting of 32 characters
+function getNewApiKey() {
+    var newApikey = "";
+    var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    
+    for (var i = 0; i < 32; i++) {
+        newApikey += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+    }
+
+    return newApikey;
 }
 
 
