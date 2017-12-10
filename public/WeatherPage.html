@@ -1,0 +1,153 @@
+<style>
+	body {
+		background: url("dust_scratches.png") no-repeat fixed;
+		-webkit-background-size: cover;
+		-moz-background-size: cover;
+		-o-background-size: cover;
+		background-size: cover;
+		font-family: "Georgia";
+	}	
+
+	h1 {
+		margin-top: 2%;
+		margin-right: 10%;
+		width: 70%;
+		padding: 5%;
+		margin-left: 10%;
+		text-align: center;
+		font-size: 200%;
+		color: #FFFFFF;
+		background-color: #000080;
+		border-color: #000080 solid 20px;
+		-moz-border-radius: 50%;
+		-webkit-border-radius: 50%;
+		border-radius: 50%;
+	}
+	
+	#navBar {
+		/*background-color: #000080;*/
+		overflow: hidden;
+		padding-top: 1%;
+		width: 100%;
+		/*margin-left: 25%;*/
+		border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+	}
+	
+	form {
+		float: left;
+		width: 20%;
+		display: block;
+		text-align: center;
+		font-size: 200%;
+		text-color: #000000;
+	}
+	
+	.tabs {
+		width: 100%;
+		padding: 1%;
+		font-size: 100%;
+		/*margin-left: 20%;
+		margin-right: 20%;*/
+		/*border-color: #333;
+		 border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;*/
+		background-color: #000080;
+		color: #FFFFFF;
+	}
+	
+	.tabs:hover {
+		background-color: #FFFFFF;
+		color: #000000;
+		font-weight: bold;
+		border: #000000 solid 100%;
+	}
+	
+</style>
+
+<script>
+	document.addEventListener("DOMContentLoaded", function() {
+
+	  //If not logged in, require user to login
+	  if( !window.localStorage.getItem("token")) {
+		window.localStorage.setItem("redirect", "LoginPage.html");
+		window.location = "LoginPage.html";
+	  }
+	});
+	
+	function getWeatherForecast() {
+		/*var token = window.localStorage.getItem("token");*/
+		var lat = document.getElementById("lat").value;
+		var lon = document.getElementById("lon").value;
+		var queryString = "http://api.openweathermap.org/data/2.5/uvi/forecast?appid=d61cd7fffecc98c7470cc19ffc78d453&lat=" + lat + "&lon=" + lon + "&cnt=3";
+		var xhr = new XMLHttpRequest();
+		xhr.addEventListener("load", displayForecast);
+		xhr.responseType = "json";   
+		xhr.open("GET", queryString);
+		xhr.send();
+	}
+	function displayForecast() {
+		var ele = document.getElementById("data");
+		if (this.status === 200){
+			var day1 = this.response[0].value;
+			var day2 = this.response[1].value;
+			var day3 = this.response[2].value;
+			var date1 = this.response[0].date_iso;
+			var date2 = this.response[1].date_iso;
+			var date3 = this.response[2].date_iso;
+			date1 = date1.substr(0,10);
+			date2 = date2.substr(0,10);
+			date3 = date3.substr(0,10);
+			
+			ele.innerHTML = "Date: " + date1 + "&#9;UV Index: " + day1 + "<br><br>" + "Date: " + date2 +"&#9;UV Index: " + day2 + "<br><br>" + "Date: " + date3 + "&#9;UV Index: " + day3;
+		}
+		else {
+			ele.innerHTML = "Make sure the latitude and longitude coordinates are in the correct format.";
+		}	
+	}
+
+/*getWeatherForecast();*/
+</script>
+
+<html>
+	<meta charset="UTF-8">
+
+	<h1>Weather Forecast</h1>
+	
+	<div id="navBar">
+		<form id="home" action="AccountHomePage.html">
+			<input class="tabs" type="submit" value="Home">
+		</form>
+		<form id="weather" action="WeatherPage.html">
+			<input class="tabs" type="submit" value="Weather"> 	
+		</form>
+		<form id="sunscreen" action="SunscreenPage.html">
+			<input class="tabs" type="submit" value="Sunscreen">	
+		</form>
+		<form id="devices" action="DevicesPage.html">
+			<input class="tabs" type="submit" value="Devices">
+		</form>
+		<form id="account" action="AccountChange.html">
+			<input class="tabs" type="submit" value="Account">	
+		</form>			
+	</div>
+	
+	<h3>UV Predictions For The Next Three Days</h3>
+	<div class="inputs">
+		<label for="lat">Latitude:</label>
+		<input type="text" name="lat" id="lat" value="32.221743">
+		<br>
+		<label for="lon">Longitude:</label>
+		<input type="text" name="lon" id="lon" value="-110.926479">
+		<br>
+		<br>
+		<input id="clickMe" type="button" value="Update" onclick="getWeatherForecast();" />
+	</div>
+	<div id="data" class="apiresponse">
+		
+	</div>
+	
+
+</html>

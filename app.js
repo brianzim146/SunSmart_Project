@@ -1,6 +1,7 @@
 var express     = require("express");
 var bodyParser  = require("body-parser");
 var mongoose    = require("mongoose");
+var jwt         = require("jwt-simple");
 
 var app = express();
 
@@ -12,8 +13,9 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-//
 mongoose.connect("mongodb://localhost/mydb");
+
+var secret = "Zman is Alpha";
 
 
 // This is to enable cross-origin access
@@ -49,6 +51,146 @@ var uvSchema = new mongoose.Schema({
 });
 
 var UV_Entry = mongoose.model("UV_Entry", uvSchema);
+
+
+
+var userSchema = new mongoose.Schema({
+    deviceIds:  [String],
+    email:      String,
+    password:   String
+});
+
+var User = mongoose.model("User", userSchema);
+
+
+app.post("/user/register", function(req, res) {
+    var responseJSON = {
+        success: false,
+        message: ""
+    };
+
+    if (req.body.email && req.body.password && req.body.deviceId) {
+        var capitalRE =     /[A-Z]/;
+        var lowercaseRE =   /[a-z]/;
+        var numberRE =      /\d/;
+        var symbolRE =      /[.,;:<>\/\\!@#$%^&*()\-`~_=+]/;
+
+        // check for strong password
+        if (!capitalRE.test(req.body.password) || !lowercaseRE.test(req.body.password) ||
+            !numberRE.test(req.body.password) || !symbolRE.test(req.body.password)) {
+
+            responseJSON.message = "password not strong enough";
+            res.status(400).json(responseJSON);
+        }
+
+    	else {
+
+            var user = new User({
+                email: req.body.email,
+                password: req.body.password,
+                deviceIds: [req.body.deviceId]
+            });
+
+            user.save(function(err, user) {
+                // couldn't save to DB
+                if (err) {
+                    console.log("Error: " + err);
+                    responseJSON.message = err;
+                    res.status(400).json(responseJSON);
+                }
+                
+                // SUCCESS
+                else {
+                    responseJSON.success = true;
+                    responseJSON.message = user.email + " has registered device " + 
+                        user.deviceIds[0];
+                    res.status(201).json(responseJSON);
+                }
+            });
+    	}
+    }
+
+    //missing parameter
+    else {
+        responseJSON.message = "Missing registration field(s)";
+        res.status(400).json(responseJSON);
+    }
+});
+
+
+
+
+app.post("/user/login", function(req, res) {
+    var responseJSON = {
+        success: false,
+        token: "",
+        message: "",
+        redirect: ""
+    };
+
+    var sentResponse = false;
+
+    if (req.body.email && req.body.password) {
+        User.findOne({ email: req.body.email, password: req.body.password }, 
+            function(err, user) {
+                if (err) {
+                    responseJSON.message = "Email or password are incorrect\n" + err;
+                    if (!sentResponse) res.status(400).json(responseJSON);
+                    sentResponse = true;
+                }
+
+                else {
+                    var payload = { email: user.email };
+                    var token = jwt.encode(payload, secret);
+                    
+                    responseJSON.token = token;
+                    responseJSON.message = "Logged in as " + user.email;
+                    responseJSON.success = true;
+                    responseJSON.redirect = 'https://stackoverflow.com/questions/36434978/how-to-redirect-to-another-page-in-node-js';
+                    
+                    if (!sentResponse) res.status(200).json(responseJSON);
+                    sentResponse = true;
+                }
+        });
+    }
+
+    //missing parameter
+    else {
+        responseJSON.message = "Missing login field(s)";
+        if (!sentResponse) res.status(400).json(responseJSON);
+        sentResponse = true;
+    }
+});
+
+
+
+
+app.put("/user/update", function(req, res) {
+
+    // Check if the X-Auth header is set
+    if (!req.headers["x-auth"]) {
+        return res.status(401).json({error: "Missing X-Auth header"});
+    }
+
+    // X-Auth should contain the token value
+    var token = req.headers["x-auth"];
+    try {
+        var decoded = jwt.decode(token, secret);
+
+        User.findOne({ email: decoded.email }, 
+            function(err, user) {
+                if (user) {
+                    res.status(200).json({ message: "hello world!" });
+                }
+                else {
+                    res.status(401).json({ error: "User " + decoded.email + " not found." });
+                }
+        });
+    }
+    catch (ex) {
+        res.status(401).json({ error: "Invalid JWT" });
+    }
+});
 
 
 
@@ -137,7 +279,7 @@ app.post("/uv/register", function(req, res){
 
     //missing parameter
     else {
-	console.log(req.body);
+        console.log(req.body);
         responseJSON.message = "Missing value property";
         res.status(400).send(JSON.stringify(responseJSON));
     }
