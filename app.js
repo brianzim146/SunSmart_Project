@@ -105,10 +105,14 @@ app.post("/user/register", function(req, res) {
                 
                 // SUCCESS
                 else {
+                    var payload = { email: user.email };
+                    var token = jwt.encode(payload, secret);
+                    
+                    responseJSON.token = token;
                     responseJSON.success = true;
                     responseJSON.message = user.email + " has registered device " + 
                         user.deviceIds[0];
-                    responseJSON.redirect = "LoginPage.html";
+                    responseJSON.redirect = "AccountHomePage.html";
 
                     res.status(201).json(responseJSON);
                 }
