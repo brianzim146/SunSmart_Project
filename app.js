@@ -1,6 +1,7 @@
 var express     = require("express");
 var bodyParser  = require("body-parser");
 var mongoose    = require("mongoose");
+var jwt         = require("jwt-simple");
 
 var app = express();
 
@@ -12,8 +13,9 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-//
 mongoose.connect("mongodb://localhost/mydb");
+
+var secret = "Zman is Alpha";
 
 
 // This is to enable cross-origin access
@@ -137,10 +139,15 @@ app.post("/user/login", function(req, res) {
                 }
 
                 else {
-		    console.log(user);
+                    var payload = { email: user.email };
+                    var token = jwt.encode(payload, secret);
+                    
+                    responseJSON.token = token;
                     responseJSON.message = "Logged in as " + user.email;
                     responseJSON.success = true;
+                    
                     if (!sentResponse) res.status(200).json(responseJSON);
+                    return res.redirect('https://stackoverflow.com/questions/36434978/how-to-redirect-to-another-page-in-node-js');
                     sentResponse = true;
                 }
         });
