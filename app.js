@@ -227,13 +227,15 @@ app.put("/user/update", function(req, res) {
                             return sendResponse(res, 401, false, "Missing device ID field");
                         }
 
-                        // console.log(user.deviceIds);
+                        console.log(user.deviceIds);
                         // user.deviceIds.push(req.body.deviceId);
                         // console.log(user.deviceIds);
 
-                        User.update({ _id: user._id }, { $addToSet: { deviceIds: req.body.deviceId} });
+                        User.update({ _id: user._id }, { $push: { deviceIds: req.body.deviceId } });
 
-                        return saveData(res, user, user.email + "'s new device has been added");
+                        console.log(user.deviceIds);
+                        return sendResponse(res, 201, true, user.email + "'s new device has been added");
+                        // return saveData(res, user, user.email + "'s new device has been added");
                     }
                     else if (req.body.operation == REMOVE_DEVICE) {
                         if (!req.body.deviceId) {
