@@ -165,6 +165,36 @@ app.post("/user/login", function(req, res) {
 
 
 
+app.put("/user/update", function(req, res) {
+
+    // Check if the X-Auth header is set
+    if (!req.headers["x-auth"]) {
+        return res.status(401).json({error: "Missing X-Auth header"});
+    }
+
+    // X-Auth should contain the token value
+    var token = req.headers["x-auth"];
+    try {
+        var decoded = jwt.decode(token, secret);
+
+        User.findOne({ email: decoded.email }, 
+            function(err, user) {
+                if (user) {
+                    res.status(200).json({ message: "hello world!" });
+                }
+                else {
+                    res.status(401).json({ error: "User " + decoded.email + " not found." });
+                }
+        });
+    }
+    catch (ex) {
+        res.status(401).json({ error: "Invalid JWT" });
+    }
+});
+
+
+
+
 
 app.get("/uv/all", function(req, res){
     UV_Entry.find({}, function(err, entries) {
