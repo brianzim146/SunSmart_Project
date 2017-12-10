@@ -1,0 +1,94 @@
+<style>
+	body {
+		background: url("dust_scratches.png") no-repeat fixed;
+		-webkit-background-size: cover;
+		-moz-background-size: cover;
+		-o-background-size: cover;
+		background-size: cover;
+		font-family: "Georgia";
+	}	
+
+	h1 {
+		margin-top: 2%;
+		margin-right: 10%;
+		width: 70%;
+		padding: 5%;
+		margin-left: 10%;
+		text-align: center;
+		font-size: 200%;
+		color: #FFFFFF;
+		background-color: #000080;
+		border-color: #000080 solid 20px;
+		-moz-border-radius: 50%;
+		-webkit-border-radius: 50%;
+		border-radius: 50%;
+	}
+	
+	#navBar {
+		/*background-color: #000080;*/
+		overflow: hidden;
+		padding-top: 1%;
+		width: 100%;
+		/*margin-left: 25%;*/
+		border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+	}
+	
+	form {
+		float: left;
+		width: 20%;
+		display: block;
+		text-align: center;
+		font-size: 200%;
+		text-color: #000000;
+	}
+	
+	.tabs {
+		width: 100%;
+		padding: 1%;
+		font-size: 100%;
+		/*margin-left: 20%;
+		margin-right: 20%;*/
+		/*border-color: #333;
+		 border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;*/
+		background-color: #000080;
+		color: #FFFFFF;
+	}
+	
+	.tabs:hover {
+		background-color: #FFFFFF;
+		color: #000000;
+		font-weight: bold;
+		border: #000000 solid 100%;
+	}
+	
+</style>
+
+<html>
+	<meta charset="UTF-8">
+
+	<h1>Sunscreen Usage</h1>
+	
+	<div id="navBar">
+		<form id="home" action="AccountHomePage.html">
+			<input class="tabs" type="submit" value="Home">
+		</form>
+		<form id="weather" action="WeatherPage.html">
+			<input class="tabs" type="submit" value="Weather"> 	
+		</form>
+		<form id="sunscreen" action="SunscreenPage.html">
+			<input class="tabs" type="submit" value="Sunscreen">	
+		</form>
+		<form id="devices" action="DevicesPage.html">
+			<input class="tabs" type="submit" value="Devices">
+		</form>
+		<form id="account" action="AccountChange.html">
+			<input class="tabs" type="submit" value="Account">	
+		</form>			
+	</div>
+	
+
+</html>
