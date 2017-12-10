@@ -24,6 +24,15 @@
 		border-radius: 50%;
 	}
 	
+	h3 {
+		margin-right: 10%;
+		width: 70%;
+		padding: 2%;
+		margin-left: 10%;
+		text-align: center;
+		font-size: 200%;
+	}
+	
 	#navBar {
 		/*background-color: #000080;*/
 		overflow: hidden;
@@ -65,7 +74,71 @@
 		border: #000000 solid 100%;
 	}
 	
+	.inputs{
+		overflow: hidden;
+		padding-top: 1%;
+		width: 80%;
+		text-align: center;
+		padding-left: 10%;
+		font-size: 125%;
+		/*margin-left: 25%;
+		border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;*/
+	}
+	
+	.apiresponse{
+		overflow: hidden;
+		padding-top: 1%;
+		width: 80%;
+		text-align: center;
+		padding-left: 10%;
+		font-size: 110%;
+		/*margin-left: 25%;
+		border-radius: 10px;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;*/
+	}
+	
 </style>
+
+<script>
+function getWeatherForecast() {
+    /*var token = window.localStorage.getItem("token");*/
+	var lat = document.getElementById("lat").value;
+	var lon = document.getElementById("lon").value;
+	var queryString = "http://api.openweathermap.org/data/2.5/uvi/forecast?appid=d61cd7fffecc98c7470cc19ffc78d453&lat=" + lat + "&lon=" + lon + "&cnt=3";
+    var xhr = new XMLHttpRequest();
+    xhr.addEventListener("load", displayForecast);
+    xhr.responseType = "json";   
+    xhr.open("GET", queryString);
+    xhr.send();
+}
+function displayForecast() {
+	var ele = document.getElementById("data");
+	if (this.status === 200){
+		var day1 = this.response[0].value;
+		var day2 = this.response[1].value;
+		var day3 = this.response[2].value;
+		var date1 = this.response[0].date_iso;
+		var date2 = this.response[1].date_iso;
+		var date3 = this.response[2].date_iso;
+		date1 = date1.substr(0,10);
+		date2 = date2.substr(0,10);
+		date3 = date3.substr(0,10);
+		
+		ele.innerHTML = "Date: " + date1 + "&#9;UV Index: " + day1 + "<br><br>" + "Date: " + date2 +"&#9;UV Index: " + day2 + "<br><br>" + "Date: " + date3 + "&#9;UV Index: " + day3;
+	}
+	else {
+		ele.innerHTML = "Make sure the latitude and longitude coordinates are in the correct format.";
+	}
+	
+	
+	
+}
+
+/*getWeatherForecast();*/
+</script>
 
 <html>
 	<meta charset="UTF-8">
@@ -89,6 +162,19 @@
 			<input class="tabs" type="submit" value="Account">	
 		</form>			
 	</div>
-	
+	<h3>UV Predictions For The Next Three Days</h3>
+	<div class="inputs">
+		<label for="lat">Latitude:</label>
+		<input type="text" name="lat" id="lat" value="32.221743">
+		<br>
+		<label for="lon">Longitude:</label>
+		<input type="text" name="lon" id="lon" value="-110.926479">
+		<br>
+		<br>
+		<input id="clickMe" type="button" value="Update" onclick="getWeatherForecast();" />
+	</div>
+	<div id="data" class="apiresponse">
+		
+	</div>
 
 </html>
