@@ -215,6 +215,7 @@ app.put("/user/update", function(req, res) {
         var decoded = jwt.decode(token, secret);
 
         User.find({ email: decoded.email }, function(err, users) {
+	    console.log("hey");
             for (var user of users) {
                 console.log(user);
             }
