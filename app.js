@@ -17,9 +17,9 @@ mongoose.connect("mongodb://localhost/mydb");
 
 var secret = "Zman is Alpha";
 
-const var CHANGE_PASSWORD   = 0;
-const var ADD_DEVICE        = 1;
-const var REMOVE_DEVICE     = 2;
+const CHANGE_PASSWORD   = 0;
+const ADD_DEVICE        = 1;
+const REMOVE_DEVICE     = 2;
 
 
 // This is to enable cross-origin access
