@@ -227,7 +227,7 @@ app.put("/user/update", function(req, res) {
                         // user.deviceIds.push(req.body.deviceId);
                         // console.log(user.deviceIds);
 
-                        User.update({ user._id }, { $addToSet: { deviceIds: req.body.deviceId} });
+                        User.update({ _id: user._id }, { $addToSet: { deviceIds: req.body.deviceId} });
 
                         return saveData(res, user, user.email + "'s new device has been added");
                     }
