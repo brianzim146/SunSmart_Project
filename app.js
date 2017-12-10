@@ -451,7 +451,9 @@ function sendResponse(res, status, success, message, extraFields = {}) {
     };
 
     for (var field in extraFields) {
-        responseJSON[field] = extraFields.field;
+	console.log(field);
+	console.log(extraFields.field);
+        responseJSON[field] = extraFields[field];
     }
 
     return res.status(status).json(responseJSON);
