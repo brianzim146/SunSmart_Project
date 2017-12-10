@@ -385,6 +385,7 @@ app.post("/data/register", function(req, res) {
                             }
 
                             else {
+                                console.log(dataEntry);
                                 return sendResponse(res, 201, true, "data from zip code " + 
                                     dataEntry.zip + " saved successfully");
                             }
@@ -399,6 +400,40 @@ app.post("/data/register", function(req, res) {
                 return sendResponse(res, 401, false, "No user could be found with that api key");
             }
         });
+    }
+});
+
+
+
+
+app.get("/data/user/all", function() {
+    // Check if the X-Auth header is set
+    if (!req.headers["x-auth"]) {
+        return res.status(401).json({error: "Missing X-Auth header"});
+    }
+
+    var token = req.headers["x-auth"];
+    try {
+        var decoded = jwt.decode(token, secret);
+
+        User.findOne({ email: decoded.email }, findUser);
+
+        function findUser(err, user) {
+            if (user) {
+                Data.find({ userId: user._id }, findData);
+            }
+            else return sendResponse(res, 401, false, err);
+        }
+
+        function findData(err, dataEntry) {
+            if (dataEntry) {
+                //
+            }
+            else return sendResponse(res, 401, false, err);
+        }
+    }
+    catch (ex) {
+        return sendResponse(res, 401, false, "Invalid JWT");
     }
 });
 
