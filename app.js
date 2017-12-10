@@ -124,7 +124,8 @@ app.post("/user/login", function(req, res) {
     var responseJSON = {
         success: false,
         token: "",
-        message: ""
+        message: "",
+        redirect: ""
     };
 
     var sentResponse = false;
@@ -145,9 +146,9 @@ app.post("/user/login", function(req, res) {
                     responseJSON.token = token;
                     responseJSON.message = "Logged in as " + user.email;
                     responseJSON.success = true;
+                    responseJSON.redirect = 'https://stackoverflow.com/questions/36434978/how-to-redirect-to-another-page-in-node-js';
                     
                     if (!sentResponse) res.status(200).json(responseJSON);
-                    return res.redirect('https://stackoverflow.com/questions/36434978/how-to-redirect-to-another-page-in-node-js');
                     sentResponse = true;
                 }
         });
