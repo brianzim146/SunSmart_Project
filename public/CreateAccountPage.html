@@ -1,3 +1,104 @@
+<script>
+	// Initiates an Ajax call to a POST endpoint for sign in
+	// TODOcosts for a specifed shipping carrier and service type
+	function showMsg(htmlmsg) {
+	  var responseDiv = document.getElementById('ServerResponse');
+	  responseDiv.style.display = "block";
+	  responseDiv.innerHTML = htmlmsg;
+	}
+
+	function sendReqForSignup() {
+	  console.log("YES");
+	  var email = document.getElementById("email").value;
+	  var deviceId = document.getElementById("device").value;
+	  var password = document.getElementById("password").value;
+	 /* var passwordConfirm = document.getElementById("passwordConfirm").value;
+
+	  if (password != passwordConfirm) {
+		showMsg("<p>Password does not match</p>");
+		return;
+	  }*/
+	  
+	  var capitalRE =     /[A-Z]/;
+      var lowercaseRE =   /[a-z]/;
+      var numberRE =      /\d/;
+      var symbolRE =      /[.,;:<>\/\\!@#$%^&*()\-`~_=+]/;
+	  
+      // check for strong password  
+	  if (email && deviceId && password) {
+	  
+		if (capitalRE.test(password) && lowercaseRE.test(password) &&
+          numberRE.test(password) && symbolRE.test(password)) {
+	 
+		  // Create the XMLHttpRequest object, register the load event
+		  // listener, and set the response type to JSON 
+		  var xhr = new XMLHttpRequest();
+		  xhr.addEventListener("load", signUpResponse);
+		  xhr.responseType = "json";
+
+		  xhr.open("POST", "http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/user/register");
+
+		  // Send the request
+		  xhr.setRequestHeader("Content-type", "application/json");
+		  xhr.send(JSON.stringify({email:email,deviceId:deviceId, password:password}));
+	    } else {
+			var htmlmsg = "<ul>Password must contain:<li>At least one capital letter</li>" + 
+							"<li>At least one lowercase letter</li><li>At least one number</li>" + 
+							"<li>At least one symbol</li></ul>";
+			showMsg(htmlmsg);
+			console.log("Fa");
+		}
+	  } else {
+		  var htmlmsg = "<p>Cannot leave a field blank!</p>";
+		  showMsg(htmlmsg);
+	  }
+	}
+
+	// Response listener for the Ajax call for getting the shippign cost results
+	function signUpResponse() {
+	  var responseDiv = document.getElementById('ServerResponse');
+	  var responseHTML = "";
+
+	  // 200 is the response code for a successful GET request
+	  if (this.status === 201) {
+		if (this.response.success) {
+			// Store token to local storage
+			window.localStorage.setItem("token", this.response.token);
+			// Store redirect to local storage
+			window.localStorage.setItem("redirect", this.response.redirect);
+			// Change current location of window to response's redirect
+			window.location = this.response.redirect;
+			console.log("Success!");
+		} else {
+		  console.log("Failed");
+		}
+	  }
+	  else {
+		// Use a span with dark red text for errors
+		responseHTML = "<p>Error: " + this.response.error + ",/p>";
+		showMsg(responseHTML);
+		console.log("Error, wrong response code");
+	  }
+
+	  console.log("finished");
+	}
+
+	document.addEventListener("DOMContentLoaded", function() {
+		if( window.localStorage.getItem("token")) {
+			window.localStorage.removeItem("token");
+	    }
+	
+		document.getElementById("loginButton").addEventListener("click", sendReqForSignup);
+		document.getElementById("device").addEventListener("keypress", function(event) {
+			var key = event.which || event.keyCode;
+			if (key === 13) { // 13 is enter
+				sendReqForSignin();
+			}
+		});	  
+	});
+</script>
+
+
 <style>
 	body {
 		background: url("BoatPic.jpg") no-repeat fixed;
@@ -35,7 +136,7 @@
 		width: 100%;
 	}
 	
-	#login #first, #login #second {
+	#login #email, #login #password {
 		margin-bottom: 1%;
 	}
 	
@@ -99,10 +200,15 @@
 		background-color: #FFFFFF;
 		color: #000000;
 	}
+	
+	.accountCreationRepsonse {
+		margin-top: 3%;
+		margin-left: -2%;
+		color: red;
+		margin-bottom: -2%;
+	}
 
 </style>
-
-
 
 <html>
 	<meta charset="UTF-8">
@@ -114,17 +220,19 @@
 	<h1>Create Your New SunSmart Account</h1>
 	
 	<body>
-		<form id="login" action="http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/user/register" method="post">
+		<div id="login">
+		<!--action="http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/user/register" method="post">-->
 		
 			<label>Email:</label>
-			<input id="first" type="text" placeholder="Enter Email" name="email" required>			
+			<input id="email" type="text" placeholder="Enter Email" name="email" required>			
 			<label>Password:</label>
-			<input id="second" type="text" placeholder="Enter Password" name="password" required>
+			<input id="password" type="text" placeholder="Enter Password" name="password" required>
 			<label>Device ID:</label>
-			<input id="third" type="text" placeholder="Enter Device ID" name="deviceId" required>
+			<input id="device" type="text" placeholder="Enter Device ID" name="deviceId" required>
 			
-			<button id="loginButton" type="submit">Login</button>
-		</form>
+			<div class="accountCreationRepsonse" id="ServerResponse" style="display: none"><ol></ol></div>
+			<button id="loginButton">Login</button>
+		</div>
 		
 		<div class="nav">
 			<form id="welcomePage" action="MainPage.html">

@@ -1,3 +1,85 @@
+<script>
+	function showMsg(htmlmsg) {
+	  var responseDiv = document.getElementById('error');
+	  responseDiv.style.display = "block";
+	  responseDiv.innerHTML = htmlmsg;
+	}
+	
+	function sendReqForSignin() {
+	  // User inputs for email and password
+	  var email = document.getElementById("email").value;
+	  var password = document.getElementById("password").value;
+
+	  if (email && password) {
+		  // Create the XMLHttpRequest object, register the load event
+		  // listener, and set the response type to JSON 
+		  var xhr = new XMLHttpRequest();
+		  // Add listener for response
+		  xhr.addEventListener("load", signInResponse);
+
+		  // Set response as JSON
+		  xhr.responseType = "json";
+
+		  // Open a POST connection to the desired endpoint with the 
+		  xhr.open("POST", "http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/user/login");
+
+		  // Set header
+		  xhr.setRequestHeader("Content-type", "application/json");
+
+		  // Send the request
+		  xhr.send(JSON.stringify({email:email, password:password}));
+	  } else {
+		var responseHTML = "<p>Must fill out both email and password!</p>";
+		showMsg(responseHTML);
+	  }
+	}
+
+	// Process response from sign in attempt 
+	function signInResponse() {
+	  var responseDiv = document.getElementById('ServerResponse');
+	  var responseHTML = "";
+	  
+	  console.log(this);
+
+	  // 200 is the response code for a successful GET request
+	  if (this.status === 201) {
+		// Store token to local storage
+		window.localStorage.setItem("token", this.response.token);
+		// Store redirect to local storage
+		window.localStorage.setItem("redirect", this.response.redirect);
+		// Redirecting location
+		window.location = this.response.redirect;
+		console.log("yes");
+	  }
+	  else {
+		// Use a span with dark red text for errors
+		/*responseHTML = "<span class='red-text text-darken-2'>";
+		responseHTML += "Error: " + this.response.error;
+		responseHTML += "</span>"
+		console.log("no");*/
+		responseHTML = "<p>Email and Password Combination Incorrect</p>"
+		showMsg(responseHTML);
+	  }
+	}
+
+	// Handle authentication on page load
+	document.addEventListener("DOMContentLoaded", function() {
+	
+		if( window.localStorage.getItem("token")) {
+			window.localStorage.removeItem("token");
+	    }
+
+		document.getElementById("loginButton").addEventListener("click", sendReqForSignin);
+		document.getElementById("password").addEventListener("keypress", function(event) {
+		  var key = event.which || event.keyCode;
+		  if (key === 13) { // 13 is enter
+			 sendReqForSignin();
+		  }
+		});
+	});
+
+</script>
+
 <style>
 	body {
 		background: url("BoatPic.jpg") no-repeat fixed;
@@ -35,7 +117,7 @@
 		width: 100%;
 	}
 	
-	#login #first {
+	#login #email {
 		margin-bottom: 1%;
 	}
 	
@@ -99,10 +181,14 @@
 		background-color: #FFFFFF;
 		color: #000000;
 	}
+	
+	#error {
+		margin-top: 2%;
+		margin-bottom: -2.5%;
+		color: red;
+	}
 
 </style>
-
-
 
 <html>
 	<meta charset="UTF-8">
@@ -114,15 +200,17 @@
 	<h1>Login to Your SunSmart Account</h1>
 	
 	<body>
-		<form id="login" action="http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/user/login" method="post">
+		<div id="login" 
+		<!--action="http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/user/login" method="post"-->
 		
 			<label>Email:</label>
-			<input id="first" type="text" placeholder="Enter Email" name="email" required>			
+			<input id="email" type="text" placeholder="Enter Email" name="email" required>			
 			<label id="sec">Password:</label>
-			<input id="second" type="text" placeholder="Enter Password" name="password" required>
+			<input id="password" type="text" placeholder="Enter Password" name="password" required>
 			
-			<button id="loginButton" type="submit">Login</button>
-		</form>
+			<div id="error"></div>
+			<button id="loginButton">Login</button>
+		</div>
 		
 		<div class="nav">
 			<form id="welcomePage" action="MainPage.html">

@@ -1,3 +1,14 @@
+<script>
+	document.addEventListener("DOMContentLoaded", function() {
+
+	  //If not logged in, require user to login
+	  if( !window.localStorage.getItem("token")) {
+		window.localStorage.setItem("redirect", "LoginPage.html");
+		window.location = "LoginPage.html";
+	  }
+	});
+</script>
+
 <style>
 	body {
 		background: url("dust_scratches.png") no-repeat fixed;
