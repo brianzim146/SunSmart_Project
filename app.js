@@ -202,7 +202,7 @@ app.put("/user/update", function(req, res) {
 
                         user.password = req.body.newPassword;
 
-                        return saveData(user, user.email + "'s new password has been saved");
+                        return saveData(res, user, user.email + "'s new password has been saved");
                     }
                     else if (req.body.operation == ADD_DEVICE) {
                         if (!req.body.deviceId) {
@@ -211,7 +211,7 @@ app.put("/user/update", function(req, res) {
 
                         user.deviceIds.push(req.body.deviceId);
 
-                        return saveData(user, user.email + "'s new device has been added");
+                        return saveData(res, user, user.email + "'s new device has been added");
                     }
                     else if (req.body.operation == REMOVE_DEVICE) {
                         if (!req.body.deviceId) {
@@ -223,7 +223,7 @@ app.put("/user/update", function(req, res) {
                         if (index > -1) {
                             user.deviceIds.splice(index, 1);
 
-                            return saveData(user, req.body.deviceId + " has been removed from " + 
+                            return saveData(res, user, req.body.deviceId + " has been removed from " + 
                                 user.email + "'s list of devices");
                         }
                         else {
@@ -409,7 +409,7 @@ function sendResponse(res, status, success, message) {
 
 
 
-function saveData(user, successMessage) {
+function saveData(res, user, successMessage) {
     user.save(function(err, user) {
         if (err) {
             return sendResponse(res, 401, false, "Error: " + err);
