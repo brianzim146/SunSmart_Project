@@ -2,6 +2,7 @@ var express     = require("express");
 var bodyParser  = require("body-parser");
 var mongoose    = require("mongoose");
 var jwt         = require("jwt-simple");
+var request 	= require("request");
 
 var app = express();
 
@@ -355,13 +356,22 @@ app.post("/data/register", function(req, res) {
 
                 var queryString = url + latitude + "," + longitude + "/?key=" + apiKey;
 
-                var xhr = new XMLHttpRequest();
-                xhr.addEventListener("load", function() {
-                    console.log(this);
-                });
-                xhr.responseType = "json";
-                xhr.open("GET", queryString);
-                xhr.send();
+		request({
+		    method: "GET",
+		    uri: queryString,
+		    qs: {}
+		}, function(error, response, body) {
+		    var data = JSON.parse(body);
+		    console.log(data.resourceSets[0].resources[0].address.postalCode);
+		});
+
+                //var xhr = new XMLHttpRequest();
+                //xhr.addEventListener("load", function() {
+                //    console.log(this);
+                //});
+                //xhr.responseType = "json";
+                //xhr.open("GET", queryString);
+                //xhr.send();
             }
 
             // no user could be found
