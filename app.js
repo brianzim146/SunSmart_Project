@@ -166,6 +166,10 @@ app.post("/user/login", function(req, res) {
 
 
 app.put("/user/update", function(req, res) {
+    var responseJSON = {
+        success: false,
+        message: ""
+    };
 
     // Check if the X-Auth header is set
     if (!req.headers["x-auth"]) {
@@ -180,6 +184,11 @@ app.put("/user/update", function(req, res) {
         User.findOne({ email: decoded.email }, 
             function(err, user) {
                 if (user) {
+                    if (!req.body.email || !req.body.operation) {
+                        responseJSON.message = "Missing login field(s)";
+                        return res.status(401).json(responseJSON);
+                    }
+
                     res.status(200).json({ message: "hello world!" });
                 }
                 else {
