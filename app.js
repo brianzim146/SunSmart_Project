@@ -96,33 +96,36 @@ app.post("/user/register", function(req, res) {
                 else if (user) {
                     return sendResponse(res, 401, false, "User" + user.email + " already exists", { alreadyExists: true });
                 }
-            });
 
-            var user = new User({
-                email: req.body.email,
-                password: req.body.password,
-                deviceIds: [req.body.deviceId]
-            });
-
-            user.save(function(err, user) {
-                // couldn't save to DB
-                if (err) {
-                    responseJSON.message = err;
-                    res.status(401).json(responseJSON);
-                }
-                
-                // SUCCESS
+                // user does not exist -- good
                 else {
-                    var payload = { email: user.email };
-                    var token = jwt.encode(payload, secret);
-                    
-                    responseJSON.token = token;
-                    responseJSON.success = true;
-                    responseJSON.message = user.email + " has registered device " + 
-                        user.deviceIds[0];
-                    responseJSON.redirect = "AccountHomePage.html";
+                    var user = new User({
+                        email: req.body.email,
+                        password: req.body.password,
+                        deviceIds: [req.body.deviceId]
+                    });
 
-                    res.status(201).json(responseJSON);
+                    user.save(function(err, user) {
+                        // couldn't save to DB
+                        if (err) {
+                            responseJSON.message = err;
+                            res.status(401).json(responseJSON);
+                        }
+                        
+                        // SUCCESS
+                        else {
+                            var payload = { email: user.email };
+                            var token = jwt.encode(payload, secret);
+                            
+                            responseJSON.token = token;
+                            responseJSON.success = true;
+                            responseJSON.message = user.email + " has registered device " + 
+                                user.deviceIds[0];
+                            responseJSON.redirect = "AccountHomePage.html";
+
+                            res.status(201).json(responseJSON);
+                        }
+                    });
                 }
             });
     	}
