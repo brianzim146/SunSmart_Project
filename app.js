@@ -346,7 +346,29 @@ app.post("/data/register", function(req, res) {
     }
 
     else {
-        User.findOne({ apiKey: req.body.apiKey }, );
+        User.findOne({ apiKey: req.body.apiKey }, function(err, user) {
+            if (user) {
+                var url = "http://dev.virtualearth.net/REST/v1/Locations/";
+                var apiKey = "AprFzriYjy7Wd0qpfNirDiGrnskcIccyO9UCI98Lz69OodGCH-XrXDvS9FEuPtBf";
+                var latitude = req.body.latitude;
+                var longitude = req.body.longitude;
+
+                var queryString = url + latitude + "," + longitude + "/?key=" + apiKey;
+
+                var xhr = new XMLHttpRequest();
+                xhr.addEventListener("load", function() {
+                    console.log(this);
+                });
+                xhr.responseType = "json";
+                xhr.open("GET", queryString);
+                xhr.send();
+            }
+
+            // no user could be found
+            else {
+
+            }
+        });
     }
 });
 
