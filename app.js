@@ -72,9 +72,10 @@ var User = mongoose.model("User", userSchema);
 
 
 var dataSchema = new mongoose.Schema({
-    userId: String,
-    uv:     Number,
-    zip:    String
+    userId:     String,
+    deviceId:   String,
+    uv:         Number,
+    zip:        String
 });
 
 var Data = mongoose.model("Data", dataSchema);
@@ -356,27 +357,46 @@ app.post("/data/register", function(req, res) {
 
                 var queryString = url + latitude + "," + longitude + "/?key=" + apiKey;
 
-		request({
-		    method: "GET",
-		    uri: queryString,
-		    qs: {}
-		}, function(error, response, body) {
-		    var data = JSON.parse(body);
-		    console.log(data.resourceSets[0].resources[0].address.postalCode);
-		});
+        		request({
+        		    method: "GET",
+        		    uri: queryString,
+        		    qs: {}
+        		}, function(error, response, body) {
+                    if (error) {
+                        return sendResponse(res, 401, false, error);
+                    }
 
-                //var xhr = new XMLHttpRequest();
-                //xhr.addEventListener("load", function() {
-                //    console.log(this);
-                //});
-                //xhr.responseType = "json";
-                //xhr.open("GET", queryString);
-                //xhr.send();
+                    // found the zip code
+                    else {
+                        var data = JSON.parse(body);
+                        var zip = data.resourceSets[0].resources[0].address.postalCode);
+
+                        var dataEntry = new Data ({
+                            user_id: user._id,
+                            deviceId: req.body.deviceId,
+                            uv: req.body.uv,
+                            zip: zip
+                        });
+
+                        // save new data point to DB
+                        dataEntry.save(function(err, dataEntry) {
+                            if (err) {
+                                return sendResponse(res, 401, false, err);
+                            }
+
+                            else {
+                                return sendResponse(res, 201, true, "data from zip code " + 
+                                    dataEntry.zip + " saved successfully");
+                            }
+                        });
+                    }
+        		});
+
             }
 
             // no user could be found
             else {
-
+                return sendResponse(res, 401, false, "No user could be found with that api key");
             }
         });
     }
