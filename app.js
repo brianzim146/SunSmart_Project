@@ -231,13 +231,9 @@ app.put("/user/update", function(req, res) {
                         user.deviceIds = ids;
 
             			user.markModified('deviceIds');
-
-            			// user.save(function(err, user1) {
-            			//     console.log("error: " + err);
-               //              console.log("saved: " + user1);
-            			// });
                         
-                        return saveData(res, 201, true, user.email + "'s new device has been added");
+                        return saveData(res, user, req.body.deviceId + " has been added to " + 
+                                user.email + "'s list of devices");
                     }
 
 
