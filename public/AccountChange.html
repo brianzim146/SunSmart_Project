@@ -1,4 +1,10 @@
 <script>
+    function showMsg(htmlmsg, type) {
+	  var responseDiv = document.getElementById(type);
+	  responseDiv.style.display = "block";
+	  responseDiv.innerHTML = htmlmsg;
+	}
+
 	document.addEventListener("DOMContentLoaded", function() {
 
 	  //If not logged in, require user to login
@@ -6,34 +12,196 @@
 		window.localStorage.setItem("redirect", "LoginPage.html");
 		window.location = "LoginPage.html";
 	  }
+	  
+	  var removeTabLink = document.getElementById("left");
+	  removeTabLink.className = removeTabLink.className.replace(" active", "");
+		
+	  var showContent = document.getElementById("email");
+	  showContent.style.display = "block";
+      //removeContent.style.display = "block";
+      removeTabLink.className += " active";
+	  
+	  document.getElementById("emailLogin").addEventListener("click", sendReqForNewEmail);
+	  document.getElementById("newEmailConfirm").addEventListener("keypress", function(event) {
+		  var key = event.which || event.keyCode;
+		  if (key === 13) { // 13 is enter
+			 sendReqForNewEmail();
+		  }
+	  });
+	  
+	  document.getElementById("passwordLogin").addEventListener("click", sendReqForNewPassword);
+	  document.getElementById("newPasswordConfirm").addEventListener("keypress", function(event) {
+		  var key = event.which || event.keyCode;
+		  if (key === 13) { // 13 is enter
+			 sendReqForNewPassword();
+		  }
+	  });
 	});
+	
+	function sendReqForNewPassword() {
+	   var password = document.getElementById("newPassword").value;
+	   var passwordConfirm = document.getElementById("newPasswordConfirm").value;
+	   
+	   var operation = "1";
+	   var token = window.localStorage.getItem("token");
+	   
+	   var response = "";
+	   
+	   if (!password || !passwordConfirm) {
+		  response = "<p>Must enter new password in both slots!<p>"
+		  showMsg(response, "passwordError");
+	   } else if (password == passwordConfirm) {
+		
+		  var capitalRE =     /[A-Z]/;
+		  var lowercaseRE =   /[a-z]/;
+          var numberRE =      /\d/;
+          var symbolRE =      /[.,;:<>\/\\!@#$%^&*()\-`~_=+]/;
+	  
+		  if (capitalRE.test(password) && lowercaseRE.test(password) &&
+              numberRE.test(password) && symbolRE.test(password)) {
+			  
+			  var xhr = new XMLHttpRequest();
+			  var newPassword = password;
+			  
+			  // Add listener for response
+			  xhr.addEventListener("load", updatePasswordResponse);
+
+			  // Set response as JSON
+			  xhr.responseType = "json";
+
+			  // Open a POST connection to the desired endpoint with the 
+			  xhr.open("PUT", "http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/user/update");
+
+			  // Set header
+			  xhr.setRequestHeader("Content-type", "application/json");
+			  xhr.setRequestHeader("x-auth", token);
+
+			  // Send the request
+			  xhr.send(JSON.stringify({newPassword:newPassword, operation:operation}));
+		   } else {
+			  response = "<ul>Password must contain:<li>At least one capital letter</li>" + 
+						 "<li>At least one lowercase letter</li><li>At least one number</li>" + 
+						 "<li>At least one symbol</li></ul>";
+			  showMsg(response, "passwordError");
+		   }
+	   } else {
+		  response = "<p>Password's must match each other!<p>"
+		  showMsg(response, "passwordError");
+	   }
+	}
+	
+	function updatePasswordResponse() {
+		var repsonse = "";
+		var password = document.getElementById("newPassword").value;
+		
+		console.log(this);
+		
+		if (this.status === 201) {
+			window.localStorage.setItem("token", this.response.token);
+			
+			response="<p style='color:#90EE90;'>Success! Your password has been updated!</p>";
+			document.getElementById("newPassword").value = "";
+			document.getElementById("newPasswordConfirm").value = "";
+			
+			showMsg(response, "passwordError");
+		}
+	}
+	
+	function sendReqForNewEmail() {
+	   var email = document.getElementById("newEmail").value;
+	   var emailConfirm = document.getElementById("newEmailConfirm").value;
+	   
+	   var operation = "0";
+	   var token = window.localStorage.getItem("token");
+	   
+	   var response = "";
+	   
+	   if (!email || !emailConfirm) {
+		  response = "<p>Must enter new email in both slots!<p>"
+		  showMsg(response, "emailError");
+		  console.log("YES");
+	   } else if (email == emailConfirm) {
+	   
+		  var xhr = new XMLHttpRequest();
+		  var newEmail = email;
+		  
+		  // Add listener for response
+		  xhr.addEventListener("load", updateEmailResponse);
+
+		  // Set response as JSON
+		  xhr.responseType = "json";
+
+		  // Open a POST connection to the desired endpoint with the 
+		  xhr.open("PUT", "http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/user/update");
+
+		  // Set header
+		  xhr.setRequestHeader("Content-type", "application/json");
+		  xhr.setRequestHeader("x-auth", token);
+
+		  // Send the request
+		  xhr.send(JSON.stringify({newEmail:newEmail, operation:operation}));
+	   } else {
+		  response = "<p>Email's must match each other!<p>"
+		  showMsg(response, "emailError");
+	   }
+	}
+	
+	function updateEmailResponse() {
+	
+		var repsonse = "";
+		var email = document.getElementById("newEmail").value;
+		
+		console.log(this);
+		
+		if (this.status === 201) {
+			window.localStorage.setItem("token", this.response.token);
+			
+			response="<p style='color:#90EE90;'>Success! Your email has been updated!</p>";
+			document.getElementById("newEmail").value = "";
+			document.getElementById("newEmailConfirm").value = "";
+			
+			showMsg(response, "emailError");
+		}
+	}
 	
 	function changeEmail() {
 		var removeContent = document.getElementById("password");
 		removeContent.style.display = "none";
 		
-		var removeTabLink = document.getElementById("left");
+		var removeTabLink = document.getElementById("right");
 		removeTabLink.className = removeTabLink.className.replace(" active", "");
 		
 		var showContent = document.getElementById("email");
 		showContent.style.display = "block";
 		//removeContent.style.display = "block";
-		removeTabLink.className += " active";
+		
+		var addTabLink = document.getElementById("left");
+		addTabLink.className += " active";
 		
 		console.log("Email");
+		
+		document.getElementById("newPassword").value = "";
+		document.getElementById("newPasswordConfirm").value = "";
+		document.getElementById("passwordError").innerHTML = "";
 	}
 	
 	function changePassword() {
 		var removeContent = document.getElementById("email");
 		removeContent.style.display = "none";
 		
-		var removeTabLink = document.getElementById("right");
+		var removeTabLink = document.getElementById("left");
 		removeTabLink.className = removeTabLink.className.replace(" active", "");
 		
 		var showContent = document.getElementById("password");
 		showContent.style.display = "block";
-		removeContent.className += " active";
+		
+		var addTabLink = document.getElementById("right")
+		addTabLink.className += " active";
 		console.log("Password");
+		
+		document.getElementById("newEmail").value = "";
+		document.getElementById("newEmailConfirm").value = "";
+		document.getElementById("emailError").innerHTML = "";
 	}	
 </script>
 
@@ -111,7 +279,7 @@
 		-o-background-size: cover;
 		background-size: cover;
 		font-family: "Georgia"; 
-		height: 50%;
+		//height: auto;
 		width: 90%;
 		margin-left: 5%;
 		position: absolute;
@@ -155,24 +323,82 @@
 	
 	.wrapper {
 		background-color: #FFFFFF;
-		border: #000000 solid 5%;
+		border: #000000 solid 20%;
 		width: 50%;
 		padding: 2%;
 		margin-left: 25%;
 		margin-right: 25%;
-		margin-top: 4%;
+		margin-top: 2%;
+		margin-bottom: 3%;
 	}
 	
 	label {
 		width: 100%;
-		margin-bottom: -5%;
+		font-size: 150%;
+		font-weight: bold;
+		font-color: #000000;
 	}
 	
-	input {
+	input[type="text"] {
+		margin-top: 0.5%;
+		padding: 1%;
 		width: 100%;
+		font-size: 120%;
+		border: #000000 solid 3000%;
 	}
 	
+	input[type="password"] {
+		margin-top: 0.5%;
+		padding: 1%;
+		width: 100%;
+		font-size: 120%;
+		border: #000000 solid 3000%;
+	}
 	
+	#newEmail, #newPassword{
+		margin-bottom: 2%;
+	}
+	
+	#tabs button.active {
+		background-color: #90EE90;
+	}	
+	
+	#tabs button {
+		background-color: #FFFFFF;
+	}
+	
+	.wrapper button {
+		margin-top: 3%;
+		font-size: 120%;
+		padding-top: 0.5%;
+		padding-bottom: 0.5%;
+		padding-left: 3%;
+		padding-right: 3%;
+		border: 2px solid #000000;
+		background-color: #FFFFFF;
+		color: #000000;
+		font-weight: bold;
+	}
+	
+	.wrapper button:hover {
+		background-color: #90EE90;
+		color: #FFFFFF;		
+	}
+	
+	#emailError, #passwordError {
+		margin-top: 2%;
+		margin-bottom: -2.5%;
+		color: red;
+		font-weight: bold;
+	}	
+	
+	ol {
+		color: red;
+		margin-top: 3%;
+		margin-left: -2%;
+		color: red;
+		margin-bottom: -2%;
+	}
 	
 </style>
 
@@ -205,18 +431,25 @@
 			<button class="tablinks" id="right" onclick="changePassword()">Change Password</button>
 		</div>
 		<div id="email" class="tabContent">
-			<!--<p class="insideDiv">Hello</p>-->
 			<div class="wrapper">
-				<label>New Email</p>
-				<input id="newEmail" type="text" placeholder="Enter New Email" value="newEmail">
-				<label>Confirm New Email</p>
-				<input id="newPassword" type="text" placeholder="Enter New Password" value="newPassword">
+				<label>New Email</label>
+				<input id="newEmail" type="text" placeholder="Enter New Email" name="newEmail">
+				<label>Confirm New Email</label>
+				<input id="newEmailConfirm" type="text" placeholder="Enter New Email" name="newEmailConfirm">
+				
+				<div id="emailError"></div>
+				<button id="emailLogin">Login</button>
 			</div>		
 		</div>
 		<div id="password" class="tabContent">
-			<!--<p class="insideDiv">Goodbye</p>-->
 			<div class="wrapper">
-				<p>HERE</p>
+				<label>New Password</label>
+				<input id="newPassword" type="password" placeholder="Enter New Password" name="newPassword">
+				<label>Confirm New Password</label>
+				<input id="newPasswordConfirm" type="password" placeholder="Confirm New Password" name="newPasswordConfirm">
+			
+				<div id="passwordError"></div>
+				<button id="passwordLogin">Login</button>
 			</div>
 		</div> 
 	</div>
