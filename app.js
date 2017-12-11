@@ -225,10 +225,10 @@ app.put("/user/update", function(req, res) {
                             return sendResponse(res, 401, false, "Missing device ID field");
                         }
 
-            			user.deviceIds.push(req.body.deviceId);
-                        // User.update({ _id: user._id }, { $push: { deviceIds: req.body.deviceId+"" } });
-            			
+            			// user.deviceIds.push(req.body.deviceId);
+                        User.update({ _id: user._id }, { $push: { deviceIds: req.body.deviceId+"" } });
                         user.markModified('deviceIds');
+                        
             			user.save(function(err, user1) {
             			    console.log("error: " + err);
                             console.log("saved: " + user1);
