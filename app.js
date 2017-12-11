@@ -87,36 +87,20 @@ var Data = mongoose.model("Data", dataSchema);
 
 
 app.post("/user/register", function(req, res) {
-    var responseJSON = {
-        success: false,
-        message: "",
-        redirect: ""
-    };
-
     if (req.body.email && req.body.password && req.body.deviceId) {
-        var capitalRE =     /[A-Z]/;
-        var lowercaseRE =   /[a-z]/;
-        var numberRE =      /\d/;
-        var symbolRE =      /[.,;:<>\/\\!@#$%^&*()\-`~_=+]/;
 
-        // check for strong password
-        if (!capitalRE.test(req.body.password) || !lowercaseRE.test(req.body.password) ||
-            !numberRE.test(req.body.password) || !symbolRE.test(req.body.password)) {
-
-            responseJSON.message = "password not strong enough";
-            res.status(401).json(responseJSON);
+        if (!strongPassword(req.body.password)) {
+            return sendResponse(res, 401, false, "Password not strong enough");
         }
 
     	else {
             User.findOne({ email: req.body.email }, function(err, user) {
-                if (err) {
-                    return sendResponse(res, 401, false, err);
-                }
-                else if (user) {
-                    return sendResponse(res, 401, false, "User " + user.email + " already exists", { alreadyExists: true });
-                }
+                if (err) return sendResponse(res, 401, false, err);
+                
+                else if (user) return sendResponse(res, 401, false, "User " + user.email + 
+                    " already exists", { alreadyExists: true });
 
-                // user does not exist -- good
+                // user does not already exist -- good
                 else {
                     var user = new User({
                         email: req.body.email,
@@ -127,32 +111,18 @@ app.post("/user/register", function(req, res) {
 
                     user.save(function(err, user) {
                         // couldn't save to DB
-                        if (err) {
-                            responseJSON.message = err;
-                            res.status(401).json(responseJSON);
-                        }
+                        if (err) return sendResponse(res, 401, false, err);
                         
                         // SUCCESS
                         else {
-                            var payload = { email: user.email };
-                            var token = jwt.encode(payload, secret);
-
                             var responseJSON = {
-                                token: token,
+                                token: createToken(user.email),
                                 apiKey: user.apiKey,
                                 redirect: "AccountHomePage.html"
                             };
                             
-			    return sendResponse(res, 201, true, user.email + " has registered device " + 
+                            return sendResponse(res, 201, true, user.email + " has registered device " + 
                                 user.deviceIds[0], responseJSON);
-                            
-                            // responseJSON.token = token;
-                            // responseJSON.success = true;
-                            // responseJSON.message = user.email + " has registered device " + 
-                            //     user.deviceIds[0];
-                            // responseJSON.redirect = "AccountHomePage.html";
-
-                            // res.status(201).json(responseJSON);
                         }
                     });
                 }
@@ -161,66 +131,35 @@ app.post("/user/register", function(req, res) {
     }
 
     //missing parameter
-    else {
-        responseJSON.message = "Missing registration field(s)";
-        res.status(401).json(responseJSON);
-    }
+    else return sendResponse(res, 401, false, "Missing registration field(s)");
 });
 
 
 
 
 app.post("/user/login", function(req, res) {
-    var responseJSON = {
-        success: false,
-        token: "",
-        message: "",
-        redirect: ""
-    };
-
-    var sentResponse = false;
-
+    
     if (req.body.email && req.body.password) {
         User.findOne({ email: req.body.email, password: req.body.password }, 
             function(err, user) {
-
-                // FIX ME FIX ME
-
-                // STILLLLL FIX ME
-                if (err) {
-                    responseJSON.message = "Email or password are incorrect\n" + err;
-                    if (!sentResponse) res.status(401).json(responseJSON);
-                    sentResponse = true;
-                }
-
+                if (err) return sendResponse(rs, 401, false, err);
+                
                 else if (user) {
-                    var payload = { email: user.email };
-                    var token = jwt.encode(payload, secret);
-                    
-                    responseJSON.token = token;
-                    responseJSON.message = "Logged in as " + user.email;
-                    responseJSON.success = true;
-                    responseJSON.redirect = "AccountHomePage.html";
-                    
-                    if (!sentResponse) res.status(201).json(responseJSON);
-                    sentResponse = true;
+                    var responseJSON = {
+                        token: createToken(user.email),
+                        redirect: "AccountHomePage.html"
+                    };
+
+                    return sendResponse(res, 201, true, "Logged in as " + user.email, responseJSON);
                 }
 
-                else {
-                    responseJSON.message = "Email or password are incorrect\n"
-                    if (!sentResponse) res.status(401).json(responseJSON);
-                    sentResponse = true;
-                }
+                else return sendResponse(res, 401, false, "Email or password are incorrect");
             }   
         );
     }
 
     //missing parameter
-    else {
-        responseJSON.message = "Missing login field(s)";
-        if (!sentResponse) res.status(401).json(responseJSON);
-        sentResponse = true;
-    }
+    else return sendResponse(res, 401, false, "Missing login field(s)");
 });
 
 
@@ -237,12 +176,6 @@ app.put("/user/update", function(req, res) {
     var token = req.headers["x-auth"];
     try {
         var decoded = jwt.decode(token, secret);
-
-        User.find({ email: decoded.email }, function(err, users) {
-            for (var user of users) {
-                console.log(user);
-            }
-        });
 
         // find specific user
         User.findOne({ email: decoded.email }, 
@@ -261,12 +194,18 @@ app.put("/user/update", function(req, res) {
                         }
 
                         user.email = req.body.newEmail;
-                        console.log(user._id);
-                        user.save(function(err, user1) {
-                            console.log(user1._id);
-                        });
 
-                        //return saveData(res, user, "New email has been set");
+                        user.save(function(err, user) {
+                            if (err) return sendResponse(res, 401, false, err);
+                            else {
+                                var responseJSON = {
+                                    token: createToken()
+                                };
+
+                                return sendResponse(res, 201, true, decoded.email + 
+                                    " successfully changed his email to " + user.email, responseJSON);
+                            }
+                        });
                     }
 
                     else if (req.body.operation == CHANGE_PASSWORD) {
@@ -324,9 +263,7 @@ app.put("/user/update", function(req, res) {
                 }
 
                 // user was not in DB
-                else {
-                    return sendResponse(res, 401, false, "User " + decoded.email + " not found");
-                }
+                else return sendResponse(res, 401, false, "User " + decoded.email + " not found");
         });
     }
     catch (ex) {
@@ -618,6 +555,13 @@ app.post("/gps/register", function(req, res){
 
 
 
+
+
+
+
+
+
+
 function strongPassword(password) {
     var capitalRE =     /[A-Z]/;
     var lowercaseRE =   /[a-z]/;
@@ -674,6 +618,12 @@ function getNewApiKey() {
     }
 
     return newApikey;
+}
+
+
+function createToken(email) {
+    var payload = { email: email };
+    return jwt.encode(payload, secret);
 }
 
 
