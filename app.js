@@ -76,6 +76,7 @@ var User = mongoose.model("User", userSchema);
 
 
 
+// data points that photon will register
 var dataSchema = new mongoose.Schema({
     userId:     String,
     deviceId:   String,
@@ -90,7 +91,10 @@ var Data = mongoose.model("Data", dataSchema);
 
 
 
-
+/* required inputs:
+ *      email: user's email
+ *      password:   user
+ */
 app.post("/user/register", function(req, res) {
     if (req.body.email && req.body.password && req.body.deviceId) {
 
@@ -371,6 +375,7 @@ app.get("/data/:zip", function(req, res) {
     }
 
     var token = req.headers["x-auth"];
+    
     try {
         var decoded = jwt.decode(token, secret);
 
@@ -420,6 +425,7 @@ app.get("/data/user/all", function(req, res) {
     }
 
     var token = req.headers["x-auth"];
+    
     try {
         var decoded = jwt.decode(token, secret);
 
@@ -452,6 +458,39 @@ app.get("/data/user/all", function(req, res) {
             }
             else return sendResponse(res, 401, false, err);
         }
+    }
+    catch (ex) {
+        return sendResponse(res, 401, false, "Invalid JWT");
+    }
+});
+
+
+
+
+
+
+
+app.get("/api/retrieve", function(req, res) {
+    // Check if the X-Auth header is set
+    if (!req.headers["x-auth"]) {
+        return res.status(401).json({error: "Missing X-Auth header"});
+    }
+
+    var token = req.headers["x-auth"];
+
+    try {
+        var decoded = jwt.decode(token, secret);
+
+        User.findOne({ email: decoded.email }, function(err, user) {
+            if (err) return sendResponse(res, 401, false, err);
+            else if (Object.keys(user).length === 0 && user.constructor === Object) {
+                return sendResponse(res, 401, false, decoded.email + " not found");
+            }
+            else {
+                return sendResponse(res, 201, true, decoded.email + "'s api key is " + user.apiKey, 
+                    { apiKey: user.apiKey });
+            }
+        });
     }
     catch (ex) {
         return sendResponse(res, 401, false, "Invalid JWT");
