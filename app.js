@@ -343,24 +343,18 @@ app.put("/user/update", function(req, res) {
 
 app.post("/data/register", function(req, res) {
     // check for all fields
-    if (!req.body.uv) console.log("missing uv");
-    if (!req.body.latitude) console.log("missing latitude");
-    if (!req.body.longitude) console.log("missing longitude");
-    if (!req.body.apiKey) console.log("missing apiKey");
-    if (!req.body.deviceId) console.log("missing deviceId");
-
-    if (!req.body.uv || !req.body.latitude || !req.body.longitude || 
-        !req.body.apiKey || !req.body.deviceId) {
+    if (!req.body.data.uv || !req.body.data.latitude || !req.body.data.longitude || 
+        !req.body.data.apiKey || !req.body.data.deviceId) {
         return sendResponse(res, 401, false, "Missing input field(s)");
     }
 
     else {
-        User.findOne({ apiKey: req.body.apiKey }, function(err, user) {
+        User.findOne({ apiKey: req.body.data.apiKey }, function(err, user) {
             if (user) {
                 var url = "http://dev.virtualearth.net/REST/v1/Locations/";
                 var apiKey = "AprFzriYjy7Wd0qpfNirDiGrnskcIccyO9UCI98Lz69OodGCH-XrXDvS9FEuPtBf";
-                var latitude = req.body.latitude;
-                var longitude = req.body.longitude;
+                var latitude = req.body.data.latitude;
+                var longitude = req.body.data.longitude;
 
                 var queryString = url + latitude + "," + longitude + "/?key=" + apiKey;
 
