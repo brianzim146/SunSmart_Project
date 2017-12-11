@@ -225,24 +225,19 @@ app.put("/user/update", function(req, res) {
                             return sendResponse(res, 401, false, "Missing device ID field");
                         }
 
+                        // manually insert new device ID
                         var ids = user.deviceIds;
                         ids.push(req.body.deviceId);
                         user.deviceIds = ids;
 
-            			// user.deviceIds.push(req.body.deviceId);
-                        // User.update({ _id: user._id }, { $push: { deviceIds: req.body.deviceId } });
-                        user.markModified('deviceIds');
+            			user.markModified('deviceIds');
 
-            			user.save(function(err, user1) {
-            			    console.log("error: " + err);
-                            console.log("saved: " + user1);
-            			});
-            			// User.findOne({email: user.email}, function(err, user) {
-            			//     console.log(user);
+            			// user.save(function(err, user1) {
+            			//     console.log("error: " + err);
+               //              console.log("saved: " + user1);
             			// });
                         
-                        return sendResponse(res, 201, true, user.email + "'s new device has been added");
-                        //return saveData(res, user, user.email + "'s new device has been added");
+                        return saveData(res, 201, true, user.email + "'s new device has been added");
                     }
 
 
