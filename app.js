@@ -225,10 +225,12 @@ app.put("/user/update", function(req, res) {
                             return sendResponse(res, 401, false, "Missing device ID field");
                         }
                         
-                        User.find({ deviceIds: req.body.deviceId }, function(err, users) {
+                        User.find({ deviceIds: { $in: [req.body.deviceId] } }, function(err, users) {
                             if (err) return sendResponse(res, 401, false, err);
-                            else if (users) return sendResponse(res, 401, false, req.body.deviceId + 
+                            else if (users.length != 0) {
+				return sendResponse(res, 401, false, req.body.deviceId + 
                                 " has already been registered", { alreadyExists: true });
+			    }
                             else {
                                 // manually insert new device ID
                                 var ids = user.deviceIds;
