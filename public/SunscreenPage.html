@@ -1,5 +1,5 @@
-<script>
-	document.addEventListener("DOMContentLoaded", function() {
+﻿<script>
+document.addEventListener("DOMContentLoaded", function() {
 
 	//If not logged in, require user to login
 	if( !window.localStorage.getItem("token")) {
@@ -7,8 +7,13 @@
 		window.location = "LoginPage.html";
 	  }
 	  
-	  updateDevices();
+	updateDevices();
+
+	document.getElementById("signOut").addEventListener("click", function () {
+	    window.localStorage.removeItem("token");
+	    window.location = "index.html";
 	});
+});
 </script>
 
 <style>
@@ -157,6 +162,18 @@
 		color: red;
 		font-size: 110%;
 	}
+
+    #signOut {
+		float: right;
+		color: #FFFFFF;
+		font-weight: bold;
+		font-size: 100%;
+		background-color: #800000;
+		padding-top: 0.5%;
+		padding-bottom: 0.5%;
+		padding-left: 1%;
+		padding-right: 1%;
+	}
 	
 </style>
 
@@ -164,6 +181,8 @@
 	<meta charset="UTF-8">
 
 	<h1>Sunscreen Usage</h1>
+
+    <button id="signOut">Sign Out</button>
 	
 	<div id="navBar">
 		<form id="home" action="AccountHomePage.html">
@@ -220,7 +239,6 @@
 			
 			//console.log(token);
 				
-			var elem = document.getElementById("test");
 			var table = document.getElementById("displayDevices");
 					
 			//Create new table based on the new input
