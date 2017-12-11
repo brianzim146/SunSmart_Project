@@ -65,31 +65,16 @@
 		border: #000000 solid 100%;
 	}
 	
-	.apiresponse {
-		overflow: hidden;
-		padding-top: 1%;
-		width: 80%;
-		text-align: center;
-		padding-left: 10%;
-		font-size: 110%;
-	}
-	
-	.inputs {
-		overflow: hidden;
-		padding-top: 1%;
-		width: 80%;
-		text-align: center;
-		padding-left: 10%;
-		font-size: 125%;
-	}
-	
-	h3 {
-		margin-right: 10%;
-		width: 70%;
-		padding: 2%;
-		margin-left: 10%;
-		text-align: center;
-		font-size: 200%;
+	#signOut {
+		float: right;
+		color: #FFFFFF;
+		font-weight: bold;
+		font-size: 100%;
+		background-color: #800000;
+		padding-top: 0.5%;
+		padding-bottom: 0.5%;
+		padding-left: 1%;
+		padding-right: 1%;
 	}
 	
 </style>
@@ -102,6 +87,11 @@
 		window.localStorage.setItem("redirect", "LoginPage.html");
 		window.location = "LoginPage.html";
 	  }
+	  
+	  document.getElementById("signOut").addEventListener("click", function() {
+		window.localStorage.removeItem("token");
+		window.location = "index.html";
+	  });
 	});
 	
 	function getWeatherForecast() {
@@ -142,6 +132,8 @@
 	<meta charset="UTF-8">
 
 	<h1>Weather Forecast</h1>
+	
+	<button id="signOut">Sign Out</button>
 	
 	<div id="navBar">
 		<form id="home" action="AccountHomePage.html">

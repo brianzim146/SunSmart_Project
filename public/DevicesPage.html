@@ -1,4 +1,11 @@
 <script>
+
+	function showMsg(htmlmsg, type) {
+	  var responseDiv = document.getElementById(type);
+	  responseDiv.style.display = "block";
+	  responseDiv.innerHTML = htmlmsg;
+	}
+	
 	document.addEventListener("DOMContentLoaded", function() {
 
 	  //If not logged in, require user to login
@@ -6,11 +13,197 @@
 		window.localStorage.setItem("redirect", "LoginPage.html");
 		window.location = "LoginPage.html";
 	  }
+	  
+	  var removeTabLink = document.getElementById("left");
+	  removeTabLink.className = removeTabLink.className.replace(" active", "");
+		
+	  var showContent = document.getElementById("addDevice");
+	  showContent.style.display = "block";
+      removeTabLink.className += " active";
+	  
+	  document.getElementById("newLogin").addEventListener("click", sendReqForNewDevice);
+	  document.getElementById("newDevice").addEventListener("keypress", function(event) {
+		  var key = event.which || event.keyCode;
+		  if (key === 13) { // 13 is enter
+			 sendReqForNewDevice();
+		  }
+	  });
+	  
+	  document.getElementById("deleteLogin").addEventListener("click", sendReqForDeleteDevice);
+	  document.getElementById("deleteDevice").addEventListener("keypress", function(event) {
+		  var key = event.which || event.keyCode;
+		  if (key === 13) { // 13 is enter
+			 sendReqForDeleteDevice();
+		  }
+	  });
+	  
+	  document.getElementById("signOut").addEventListener("click", function() {
+		window.localStorage.removeItem("token");
+		window.location = "index.html";
+	  });
 	});
+	
+	function sendReqForNewDevice() {
+	   var deviceId = document.getElementById("newDevice").value;
+	   
+	   var operation = "2";
+	   var token = window.localStorage.getItem("token");
+	   
+	   if (!token) {
+	      window.localStorage.setItem("redirect", "index.html");
+		  window.localStorage.removeItem("token");
+		  window.location = "index.html";
+	   }
+	   
+	   var response = "";
+	   
+	   if (!deviceId) {
+		  response = "<p>Must enter new device Id!<p>"
+		  showMsg(response, "deleteDeviceError");
+		  console.log("YES-1");
+	   } else {
+			  
+		  var xhr = new XMLHttpRequest();
+			  
+		  // Add listener for response
+		  xhr.addEventListener("load", addDeviceResponse);
+
+		  // Set response as JSON
+	      xhr.responseType = "json";
+
+	      // Open a POST connection to the desired endpoint with the 
+		  xhr.open("PUT", "http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/user/update");
+
+		  // Set header
+		  xhr.setRequestHeader("Content-type", "application/json");
+		  xhr.setRequestHeader("x-auth", token);
+
+		   // Send the request
+		   xhr.send(JSON.stringify({deviceId:deviceId, operation:operation})); 
+	   } 
+	}
+	
+	function addDeviceResponse() {
+		var repsonse = "";
+		
+		console.log(this);
+		
+		if (this.status === 201) {
+		
+				response="<p style='color:#90EE90;'>Success! Your device has been added!</p>";
+				document.getElementById("newDevice").value = "";
+			
+				showMsg(response, "newDeviceError");
+		} else if (this.status === 401) {
+				response="<p style='color:red;'>Error! This device already exsits!</p>";
+				document.getElementById("newDevice").value = "";
+			
+				showMsg(response, "newDeviceError");
+		}
+	}
+	
+	function sendReqForDeleteDevice() {
+	   var deviceId = document.getElementById("deleteDevice").value;
+	   
+	   var operation = "3";
+	   var token = window.localStorage.getItem("token");
+	   
+	   if (!token) {
+	      window.localStorage.setItem("redirect", "index.html");
+		  window.localStorage.removeItem("token");
+		  window.location = "index.html";
+	   }
+	   
+	   var response = "";
+	   
+	   if (!deviceId) {
+		  response = "<p>Must enter new device Id!<p>"
+		  showMsg(response, "deleteDeviceError");
+		  console.log("YES");
+	   } else {
+	   
+		  var xhr = new XMLHttpRequest();
+		  
+		  // Add listener for response
+		  xhr.addEventListener("load", deleteDeviceResponse);
+
+		  // Set response as JSON
+		  xhr.responseType = "json";
+
+		  // Open a POST connection to the desired endpoint with the 
+		  xhr.open("PUT", "http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/user/update");
+
+		  // Set header
+		  xhr.setRequestHeader("Content-type", "application/json");
+		  xhr.setRequestHeader("x-auth", token);
+
+		  // Send the request
+		  xhr.send(JSON.stringify({deviceId:deviceId, operation:operation}));
+	   } 
+	}
+	
+	function deleteDeviceResponse() {
+	
+		var repsonse = "";
+		
+		console.log(this);
+		
+		if (this.status === 201) {
+			
+			
+				response="<p style='color:#90EE90;'>Success! The device has been added!</p>";
+				document.getElementById("deleteDevice").value = "";
+			
+				showMsg(response, "deleteDeviceError");
+		} else if (this.status === 401) {
+				response="<p style='color:red;'>Error! This device does not exsist!</p>";
+				document.getElementById("deleteDevice").value = "";
+			
+				showMsg(response, "deleteDeviceError");
+		}
+	}
+	
+	function changeToAddDevice() {
+		var removeContent = document.getElementById("removeDevice");
+		removeContent.style.display = "none";
+		
+		var removeTabLink = document.getElementById("right");
+		removeTabLink.className = removeTabLink.className.replace(" active", "");
+		
+		var showContent = document.getElementById("addDevice");
+		showContent.style.display = "block";
+		//removeContent.style.display = "block";
+		
+		var addTabLink = document.getElementById("left");
+		addTabLink.className += " active";
+		
+		console.log("Add Device");
+		
+		document.getElementById("deleteDevice").value = "";
+		document.getElementById("deleteDeviceError").innerHTML = "";
+	}
+	
+	function changeToDeleteDevice() {
+		var removeContent = document.getElementById("addDevice");
+		removeContent.style.display = "none";
+		
+		var removeTabLink = document.getElementById("left");
+		removeTabLink.className = removeTabLink.className.replace(" active", "");
+		
+		var showContent = document.getElementById("removeDevice");
+		showContent.style.display = "block";
+		
+		var addTabLink = document.getElementById("right")
+		addTabLink.className += " active";
+		console.log("removeDevice");
+		
+		document.getElementById("newDevice").value = "";
+		document.getElementById("newDeviceError").innerHTML = "";
+	}
 </script>
 
 <style>
-	body {
+		body {
 		background: url("dust_scratches.png") no-repeat fixed;
 		-webkit-background-size: cover;
 		-moz-background-size: cover;
@@ -76,12 +269,146 @@
 		border: #000000 solid 100%;
 	}
 	
+	#change {
+		background: url("https://images.freecreatives.com/wp-content/uploads/2016/02/Amazing-Free-Navy-Blue-Texture-Background.jpg") no-repeat fixed;
+		-webkit-background-size: cover;
+		-moz-background-size: cover;
+		-o-background-size: cover;
+		background-size: cover;
+		font-family: "Georgia"; 
+		//height: auto;
+		width: 90%;
+		margin-left: 5%;
+		position: absolute;
+	}
+	
+	#tabs {
+		margin-left: 35%;
+		margin-right: 30%;
+	}
+	
+	.tablinks {
+		margin-top: 3%;
+		float: center;
+		text-color: #000000;
+		background-color: #FFFFFF;
+		border: #000000 solid 3px;
+		padding-right: 5%;
+		padding-left: 5%;
+		padding-top: 3%;
+		padding-bottom: 3%;
+		display: inline;
+		position: relative
+		align: center;
+		font-weight: bold;
+		font-size: 110%;
+	}
+	
+	.tablinks:hover {
+		background-color: #90EE90;
+		color: #000000;
+		font-weight: bold;
+	}
+	
+	.insideDiv {
+		color: #FFFFFF;
+	}
+	
+	.tabContent {
+		display: none;
+	}
+	
+	.wrapper {
+		background-color: #FFFFFF;
+		border: #000000 solid 20%;
+		width: 50%;
+		padding: 2%;
+		margin-left: 25%;
+		margin-right: 25%;
+		margin-top: 2%;
+		margin-bottom: 3%;
+	}
+	
+	label {
+		width: 100%;
+		font-size: 150%;
+		font-weight: bold;
+		font-color: #000000;
+	}
+	
+	input[type="text"] {
+		margin-top: 0.5%;
+		padding: 1%;
+		width: 100%;
+		font-size: 120%;
+		border: #000000 solid 3000%;
+	}
+	
+	/*#newDevice, #deleteDevice {
+		margin-bottom: 2%;
+	}*/
+	
+	#tabs button.active {
+		background-color: #90EE90;
+	}
+	
+	#tabs button {
+		background-color: #FFFFFF;
+	}
+	
+	.wrapper button {
+		margin-top: 3%;
+		font-size: 120%;
+		padding-top: 0.5%;
+		padding-bottom: 0.5%;
+		padding-left: 3%;
+		padding-right: 3%;
+		border: 2px solid #000000;
+		background-color: #FFFFFF;
+		color: #000000;
+		font-weight: bold;
+	}
+	
+	.wrapper button:hover {
+		background-color: #90EE90;
+		color: #FFFFFF;		
+	}
+	
+	#newDeviceError, #deleteDeviceError {
+		margin-top: 2%;
+		margin-bottom: -2.5%;
+		color: red;
+		font-weight: bold;
+	}	
+	
+	ol {
+		color: red;
+		margin-top: 3%;
+		margin-left: -2%;
+		color: red;
+		margin-bottom: -2%;
+	}
+	
+	#signOut {
+		float: right;
+		color: #FFFFFF;
+		font-weight: bold;
+		font-size: 100%;
+		background-color: #800000;
+		padding-top: 0.5%;
+		padding-bottom: 0.5%;
+		padding-left: 1%;
+		padding-right: 1%;
+	}
+	
 </style>
 
 <html>
 	<meta charset="UTF-8">
 
 	<h1>Account Devices</h1>
+	
+	<button id="signOut">Sign Out</button>
 	
 	<div id="navBar">
 		<form id="home" action="AccountHomePage.html">
@@ -99,6 +426,31 @@
 		<form id="account" action="AccountChange.html">
 			<input class="tabs" type="submit" value="Account">	
 		</form>			
+	</div>
+	
+	<div id="change">
+		<div id="tabs">
+			<button class="tablinks" id="left" onclick="changeToAddDevice()">Add New Device</button>
+			<button class="tablinks" id="right" onclick="changeToDeleteDevice()">Delete Old Device</button>
+		</div>
+		<div id="addDevice" class="tabContent">
+			<div class="wrapper">
+				<label>New Device Id</label>
+				<input id="newDevice" type="text" placeholder="Enter Device Id" name="newDevice">
+				
+				<div id="newDeviceError"></div>
+				<button id="newLogin">Login</button>
+			</div>		
+		</div>
+		<div id="removeDevice" class="tabContent">
+			<div class="wrapper">
+				<label>Delete Device Id</label>
+				<input id="deleteDevice" type="text" placeholder="Enter Device Id" name="deleteDevice">
+			
+				<div id="deleteDeviceError"></div>
+				<button id="deleteLogin">Login</button>
+			</div>
+		</div> 
 	</div>
 	
 
