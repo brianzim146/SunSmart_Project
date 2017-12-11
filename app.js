@@ -643,8 +643,6 @@ function sendResponse(res, status, success, message, extraFields = {}) {
         responseJSON[field] = extraFields[field];
     }
 
-    console.log(responseJSON);
-
     return res.status(status).json(responseJSON);
 }
 
