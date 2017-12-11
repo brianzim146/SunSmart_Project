@@ -16,8 +16,9 @@ app.use(bodyParser.json());
 
 mongoose.connect("mongodb://localhost/mydb");
 
-var secret = "Zman is Alpha";
+var secret = "Zman is Alpha"; // secret key for decoding tokens
 
+//constants for account operations
 const CHANGE_EMAIL      = 0;
 const CHANGE_PASSWORD   = 1;
 const ADD_DEVICE        = 2;
@@ -28,35 +29,39 @@ const REMOVE_DEVICE     = 3;
 app.use(function (req, res, next) {
     // Website you wish to allow to connect
     res.setHeader('Access-Control-Allow-Origin', '*');
+
     // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    
     // Request headers you wish to allow
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,x-auth');
+    
     // Set to true if you need the website to include cookies in the requests sent
     // to the API (e.g. in case you use sessions)
     res.setHeader('Access-Control-Allow-Credentials', true);
+    
     // Pass to next layer of middleware
     next();
 });
 
 
 
-var gpsSchema = new mongoose.Schema({
-    time:   { type: Date, default: Date.now },
-    latitude:   String,
-    longitude:  String
-});
+// var gpsSchema = new mongoose.Schema({
+//     time:   { type: Date, default: Date.now },
+//     latitude:   String,
+//     longitude:  String
+// });
 
-var GPS_Entry = mongoose.model("GPS_Entry", gpsSchema);
+// var GPS_Entry = mongoose.model("GPS_Entry", gpsSchema);
 
 
 
-var uvSchema = new mongoose.Schema({
-    time:   { type: Date, default: Date.now },
-    value:  Number
-});
+// var uvSchema = new mongoose.Schema({
+//     time:   { type: Date, default: Date.now },
+//     value:  Number
+// });
 
-var UV_Entry = mongoose.model("UV_Entry", uvSchema);
+// var UV_Entry = mongoose.model("UV_Entry", uvSchema);
 
 
 
@@ -71,6 +76,7 @@ var User = mongoose.model("User", userSchema);
 
 
 
+// data points that photon will register
 var dataSchema = new mongoose.Schema({
     userId:     String,
     deviceId:   String,
@@ -85,7 +91,10 @@ var Data = mongoose.model("Data", dataSchema);
 
 
 
-
+/* required inputs:
+ *      email: user's email
+ *      password:   user
+ */
 app.post("/user/register", function(req, res) {
     if (req.body.email && req.body.password && req.body.deviceId) {
 
@@ -228,9 +237,9 @@ app.put("/user/update", function(req, res) {
                         User.find({ deviceIds: { $in: [req.body.deviceId] } }, function(err, users) {
                             if (err) return sendResponse(res, 401, false, err);
                             else if (users.length != 0) {
-				return sendResponse(res, 401, false, req.body.deviceId + 
-                                " has already been registered", { alreadyExists: true });
-			    }
+				                return sendResponse(res, 401, false, req.body.deviceId + 
+                                    " has already been registered", { alreadyExists: true });
+                            }
                             else {
                                 // manually insert new device ID
                                 var ids = user.deviceIds;
@@ -337,7 +346,7 @@ app.post("/data/register", function(req, res) {
                             }
 
                             else {
-                                console.log(dataEntry);
+                                // console.log(dataEntry);
                                 return sendResponse(res, 201, true, "data from zip code " + 
                                     dataEntry.zip + " saved successfully");
                             }
@@ -358,6 +367,57 @@ app.post("/data/register", function(req, res) {
 
 
 
+
+app.get("/data/:zip", function(req, res) {
+    // Check if the X-Auth header is set
+    if (!req.headers["x-auth"]) {
+        return res.status(401).json({error: "Missing X-Auth header"});
+    }
+
+    var token = req.headers["x-auth"];
+    
+    try {
+        var decoded = jwt.decode(token, secret);
+
+        User.find({ email: decoded.email }, function(err, users) {
+            if (err) return sendResponse(res, 401, false, err);
+            else if (users.length == 0) return sendResponse(res, 401, false, decoded.email + 
+                " is not a valid user");
+        });
+
+        var zip = req.params.zip;
+
+        Data.find({ zip: zip }, findData);
+
+        function findData(err, dataEntries) {
+            if (err) return sendResponse(res, 401, false, err);
+            else {
+                var responseJSON = {
+                    data: []
+                };
+
+                for (var entry of dataEntries) {
+                    var dataPoint = {
+                        deviceId: entry.deviceId,
+                        uv: entry.uv,
+                        zip: zip
+                    };
+
+                    responseJSON.data.push(dataPoint);
+                }
+
+                return sendResponse(res, 201, true, "Data for zipcode: " + zip, responseJSON);
+            }
+        }
+    }
+    catch (ex) {
+        return sendResponse(res, 401, false, "Invalid JWT");
+    }
+});
+
+
+
+
 app.get("/data/user/all", function(req, res) {
     // Check if the X-Auth header is set
     if (!req.headers["x-auth"]) {
@@ -365,6 +425,7 @@ app.get("/data/user/all", function(req, res) {
     }
 
     var token = req.headers["x-auth"];
+    
     try {
         var decoded = jwt.decode(token, secret);
 
@@ -409,154 +470,187 @@ app.get("/data/user/all", function(req, res) {
 
 
 
+app.get("/api/retrieve", function(req, res) {
+    // Check if the X-Auth header is set
+    if (!req.headers["x-auth"]) {
+        return res.status(401).json({error: "Missing X-Auth header"});
+    }
 
+    var token = req.headers["x-auth"];
 
+    try {
+        var decoded = jwt.decode(token, secret);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-app.get("/uv/all", function(req, res){
-    UV_Entry.find({}, function(err, entries) {
-        if (err) {
-            var errorMsg = {
-                "message": err
-            };
-
-            res.status(401).send(JSON.stringify(errorMsg));
-        }
-        else {
-            var response = { 
-                uv_entries: []
-            };
-
-            for (var entry of entries) {
-                response.uv_entries.push(entry);
+        User.findOne({ email: decoded.email }, function(err, user) {
+            if (err) return sendResponse(res, 401, false, err);
+            else if (Object.keys(user).length === 0 && user.constructor === Object) {
+                return sendResponse(res, 401, false, decoded.email + " not found");
             }
-
-            res.status(201).send(JSON.stringify(response));
-        }
-    });
-});
-
-
-
-
-app.get("/gps/all", function(req, res) {
-    GPS_Entry.find({}, function(err, entries) {
-        if (err) {
-            var errorMsg = {
-                "message": err
-            };
-
-            res.status(401).send(JSON.stringify(errorMsg));
-        }
-        else {
-            var response = {
-                gps_entries: []
-            };
-
-            for (var entry of entries) {
-                response.gps_entries.push(entry);
-            }
-
-            res.status(201).send(JSON.stringify(response));
-        }
-    });
-});
-
-
-
-
-app.post("/uv/register", function(req, res){
-    var responseJSON = {
-        success: false,
-        message: ""
-    };
-
-    if (req.body.value) {
-        var uv_entry = new UV_Entry({
-            value: req.body.value
-        });
-
-        uv_entry.save(function(err, uv_entry) {
-            // couldn't save to DB
-            if (err) {
-                console.log("Error: " + err);
-                responseJSON.message = err;
-                res.status(401).send(JSON.stringify(responseJSON));
-            }
-            
-            // SUCCESS
             else {
-                responseJSON.success = true;
-                responseJSON.message = "UV value of " + uv_entry.value + 
-                                        " was saved with ID " + uv_entry._id;
-                res.status(201).send(JSON.stringify(responseJSON));
+                return sendResponse(res, 201, true, decoded.email + "'s api key is " + user.apiKey, 
+                    { apiKey: user.apiKey });
             }
         });
     }
-
-    //missing parameter
-    else {
-        console.log(req.body);
-        responseJSON.message = "Missing value property";
-        res.status(401).send(JSON.stringify(responseJSON));
+    catch (ex) {
+        return sendResponse(res, 401, false, "Invalid JWT");
     }
 });
 
 
 
 
-app.post("/gps/register", function(req, res){
-    var responseJSON = {
-        success: false,
-        message: ""
-    };
 
-    if (req.body.latitude && req.body.longitude) {
-        var gps_entry = new GPS_Entry({
-            latitude: req.body.latitude,
-            longitude: req.body.longitude
-        });
 
-        gps_entry.save(function(err, gps_entry) {
-            // couldn't save to DB
-            if (err) {
-                console.log("Error: " + err);
-                responseJSON.message = err;
-                res.status(401).send(JSON.stringify(responseJSON));
-            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// app.get("/uv/all", function(req, res){
+//     UV_Entry.find({}, function(err, entries) {
+//         if (err) {
+//             var errorMsg = {
+//                 "message": err
+//             };
+
+//             res.status(401).send(JSON.stringify(errorMsg));
+//         }
+//         else {
+//             var response = { 
+//                 uv_entries: []
+//             };
+
+//             for (var entry of entries) {
+//                 response.uv_entries.push(entry);
+//             }
+
+//             res.status(201).send(JSON.stringify(response));
+//         }
+//     });
+// });
+
+
+
+
+// app.get("/gps/all", function(req, res) {
+//     GPS_Entry.find({}, function(err, entries) {
+//         if (err) {
+//             var errorMsg = {
+//                 "message": err
+//             };
+
+//             res.status(401).send(JSON.stringify(errorMsg));
+//         }
+//         else {
+//             var response = {
+//                 gps_entries: []
+//             };
+
+//             for (var entry of entries) {
+//                 response.gps_entries.push(entry);
+//             }
+
+//             res.status(201).send(JSON.stringify(response));
+//         }
+//     });
+// });
+
+
+
+
+// app.post("/uv/register", function(req, res){
+//     var responseJSON = {
+//         success: false,
+//         message: ""
+//     };
+
+//     if (req.body.value) {
+//         var uv_entry = new UV_Entry({
+//             value: req.body.value
+//         });
+
+//         uv_entry.save(function(err, uv_entry) {
+//             // couldn't save to DB
+//             if (err) {
+//                 console.log("Error: " + err);
+//                 responseJSON.message = err;
+//                 res.status(401).send(JSON.stringify(responseJSON));
+//             }
             
-            // SUCCESS
-            else {
-                responseJSON.success = true;
-                responseJSON.message = "GPS value with (latitude, longitude): (" + 
-                                        gps_entry.latitude + ", " + gps_entry.longitude +
-                                        ") was saved with ID " + gps_entry._id;
-                res.status(201).send(JSON.stringify(responseJSON));
-            }
-        });
-    }
+//             // SUCCESS
+//             else {
+//                 responseJSON.success = true;
+//                 responseJSON.message = "UV value of " + uv_entry.value + 
+//                                         " was saved with ID " + uv_entry._id;
+//                 res.status(201).send(JSON.stringify(responseJSON));
+//             }
+//         });
+//     }
 
-    //missing parameter
-    else {
-    console.log(req.body);
-        responseJSON.message = "Missing latitude or longitude property";
-        res.status(401).send(JSON.stringify(responseJSON));
-    }
-});
+//     //missing parameter
+//     else {
+//         console.log(req.body);
+//         responseJSON.message = "Missing value property";
+//         res.status(401).send(JSON.stringify(responseJSON));
+//     }
+// });
+
+
+
+
+// app.post("/gps/register", function(req, res){
+//     var responseJSON = {
+//         success: false,
+//         message: ""
+//     };
+
+//     if (req.body.latitude && req.body.longitude) {
+//         var gps_entry = new GPS_Entry({
+//             latitude: req.body.latitude,
+//             longitude: req.body.longitude
+//         });
+
+//         gps_entry.save(function(err, gps_entry) {
+//             // couldn't save to DB
+//             if (err) {
+//                 console.log("Error: " + err);
+//                 responseJSON.message = err;
+//                 res.status(401).send(JSON.stringify(responseJSON));
+//             }
+            
+//             // SUCCESS
+//             else {
+//                 responseJSON.success = true;
+//                 responseJSON.message = "GPS value with (latitude, longitude): (" + 
+//                                         gps_entry.latitude + ", " + gps_entry.longitude +
+//                                         ") was saved with ID " + gps_entry._id;
+//                 res.status(201).send(JSON.stringify(responseJSON));
+//             }
+//         });
+//     }
+
+//     //missing parameter
+//     else {
+//     console.log(req.body);
+//         responseJSON.message = "Missing latitude or longitude property";
+//         res.status(401).send(JSON.stringify(responseJSON));
+//     }
+// });
 
 
 
