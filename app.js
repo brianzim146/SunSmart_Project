@@ -31,7 +31,7 @@ app.use(function (req, res, next) {
     // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     // Request headers you wish to allow
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,x-auth');
     // Set to true if you need the website to include cookies in the requests sent
     // to the API (e.g. in case you use sessions)
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -373,7 +373,7 @@ app.post("/data/register", function(req, res) {
                         var zip = data.resourceSets[0].resources[0].address.postalCode;
 
                         var dataEntry = new Data ({
-                            user_id: user._id,
+                            userId: user._id,
                             deviceId: req.body.deviceId,
                             uv: req.body.uv,
                             zip: zip
@@ -416,11 +416,12 @@ app.get("/data/user/all", function(req, res) {
     var token = req.headers["x-auth"];
     try {
         var decoded = jwt.decode(token, secret);
-
+	console.log(decoded.email);
         User.findOne({ email: decoded.email }, findUser);
 
         function findUser(err, user) {
             if (user) {
+		console.log(user);
                 Data.find({ userId: user._id }, findData);
             }
             else return sendResponse(res, 401, false, err);
@@ -432,7 +433,10 @@ app.get("/data/user/all", function(req, res) {
                     data: []
                 };
 
+		console.log(dataEntries);
+
                 for (var entry of dataEntries) {
+console.log("wht the hell");
                     var dataPoint = {
                         deviceId: entry.deviceId,
                         uv: entry.uv,
@@ -440,6 +444,7 @@ app.get("/data/user/all", function(req, res) {
                     };
 
                     responseJSON.data.push(dataPoint);
+		    console.log("testing...");
                 }
 
                 return sendResponse(res, 201, true, "Data for " + decoded.email, responseJSON);
@@ -636,6 +641,8 @@ function sendResponse(res, status, success, message, extraFields = {}) {
     for (var field in extraFields) {
         responseJSON[field] = extraFields[field];
     }
+
+    console.log(responseJSON);
 
     return res.status(status).json(responseJSON);
 }
