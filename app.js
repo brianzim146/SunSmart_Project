@@ -203,10 +203,11 @@ app.put("/user/update", function(req, res) {
                                 };
 
                                 return sendResponse(res, 201, true, decoded.email + 
-                                    " successfully changed his email to " + user.email, responseJSON);
+                                    " successfully changed email to " + user.email, responseJSON);
                             }
                         });
                     }
+
 
                     else if (req.body.operation == CHANGE_PASSWORD) {
                         if (!req.body.newPassword) {
@@ -217,6 +218,8 @@ app.put("/user/update", function(req, res) {
 
                         return saveData(res, user, user.email + "'s new password has been saved");
                     }
+
+
                     else if (req.body.operation == ADD_DEVICE) {
                         if (!req.body.deviceId) {
                             return sendResponse(res, 401, false, "Missing device ID field");
@@ -598,7 +601,7 @@ function sendResponse(res, status, success, message, extraFields = {}) {
 function saveData(res, user, successMessage) {
     user.save(function(err, user) {
         if (err) {
-            return sendResponse(res, 401, false, "Error: " + err);
+            return sendResponse(res, 401, false, err);
         }
         else {
             return sendResponse(res, 201, true, successMessage);
