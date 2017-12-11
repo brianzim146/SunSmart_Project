@@ -407,7 +407,7 @@ app.post("/data/register", function(req, res) {
 
 
 
-app.get("/data/user/all", function() {
+app.get("/data/user/all", function(req, res) {
     // Check if the X-Auth header is set
     if (!req.headers["x-auth"]) {
         return res.status(401).json({error: "Missing X-Auth header"});
