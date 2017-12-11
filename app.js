@@ -347,7 +347,7 @@ app.post("/data/register", function(req, res) {
         req.body.data = JSON.parse(req.body.data);
         req.body = req.body.data;
     }
-    
+
     // check for all fields
     if (!req.body.uv || !req.body.latitude || !req.body.longitude || 
         !req.body.apiKey || !req.body.deviceId) {
@@ -355,12 +355,12 @@ app.post("/data/register", function(req, res) {
     }
 
     else {
-        User.findOne({ apiKey: req.body.data.apiKey }, function(err, user) {
+        User.findOne({ apiKey: req.body.apiKey }, function(err, user) {
             if (user) {
                 var url = "http://dev.virtualearth.net/REST/v1/Locations/";
                 var apiKey = "AprFzriYjy7Wd0qpfNirDiGrnskcIccyO9UCI98Lz69OodGCH-XrXDvS9FEuPtBf";
-                var latitude = req.body.data.latitude;
-                var longitude = req.body.data.longitude;
+                var latitude = req.body.latitude;
+                var longitude = req.body.longitude;
 
                 var queryString = url + latitude + "," + longitude + "/?key=" + apiKey;
 
