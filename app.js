@@ -342,9 +342,15 @@ app.put("/user/update", function(req, res) {
 
 
 app.post("/data/register", function(req, res) {
+    // weird webhook glitch
+    if (req.body.data) {
+        req.body.data = JSON.parse(req.body.data);
+        req.body = req.body.data;
+    }
+    
     // check for all fields
-    if (!req.body.data.uv || !req.body.data.latitude || !req.body.data.longitude || 
-        !req.body.data.apiKey || !req.body.data.deviceId) {
+    if (!req.body.uv || !req.body.latitude || !req.body.longitude || 
+        !req.body.apiKey || !req.body.deviceId) {
         return sendResponse(res, 401, false, "Missing input field(s)");
     }
 
