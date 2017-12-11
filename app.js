@@ -337,7 +337,7 @@ app.post("/data/register", function(req, res) {
                             }
 
                             else {
-                                console.log(dataEntry);
+                                // console.log(dataEntry);
                                 return sendResponse(res, 201, true, "data from zip code " + 
                                     dataEntry.zip + " saved successfully");
                             }
@@ -396,7 +396,7 @@ app.get("/data/:zip", function(req, res) {
                     responseJSON.data.push(dataPoint);
                 }
 
-                return sendResponse(res, 201, true, "Data for " + zip, responseJSON);
+                return sendResponse(res, 201, true, "Data for zipcode: " + zip, responseJSON);
             }
         }
     }
