@@ -8,14 +8,7 @@
 	  }
 	  
 	  updateDevices();
-	  
-	  document.getElementById("signOut").addEventListener("click", function() {
-		window.localStorage.removeItem("token");
-		window.location = "index.html";
-	  });
 	});
-	
-	
 </script>
 
 <style>
@@ -121,18 +114,48 @@
 	
 	td {
 		font-size: 140%;
-	}	
+	}
 	
-	#signOut {
-		float: right;
-		color: #FFFFFF;
-		font-weight: bold;
-		font-size: 100%;
-		background-color: #800000;
-		padding-top: 0.5%;
-		padding-bottom: 0.5%;
-		padding-left: 1%;
-		padding-right: 1%;
+	#sunscreenInputs{
+		width: 60%;
+		margin-left: 20%;
+		margin-right: 20%;
+	}
+	
+	select{
+		width: 60%;
+		margin-left: 20%;
+		margin-right: 20%;
+		margin-bottom: 2%;
+	}
+	
+	label{
+		width: 60%;
+		margin-left: 20%;
+		margin-right: 20%;
+		margin-bottom: 2%;
+	}
+	
+	#clickMe{
+		margin-left: 20%;
+		margin-right: 20%;
+		margin-bottom: 2%;
+	}
+	
+	#results{
+		width: 60%;
+		margin-left: 20%;
+		margin-right: 20%;
+	}
+	
+	#risk{
+		color: red;
+		font-size: 110%;
+	}
+	
+	#amount{
+		color: red;
+		font-size: 110%;
 	}
 	
 </style>
@@ -141,8 +164,6 @@
 	<meta charset="UTF-8">
 
 	<h1>Sunscreen Usage</h1>
-	
-	<button id="signOut">Sign Out</button>
 	
 	<div id="navBar">
 		<form id="home" action="AccountHomePage.html">
@@ -161,7 +182,31 @@
 			<input class="tabs" type="submit" value="Account">	
 		</form>			
 	</div>
-	
+	<div id="sunscreenInputs">
+		<label for="sunscrn">Did you apply Sunscreen?<br></label>
+		<select name="sunscrn" id="sunscrn">
+			<option value=1>No Sunscreen</option>
+			<option value=15>SPF 15</option>
+			<option value=30>SPF 30</option>
+			<option value=50>SPF 50</option>
+		</select>
+		<br>
+		<label for="time">If so, when was it applied?<br></label>
+		<select name="time" id="time">
+			<option value=0>within 1 hour</option>
+			<option value=1>1 hour ago</option>
+			<option value=2>2 hours ago</option>
+			<option value=3>3 hours ago</option>
+			<option value=4>4 hours ago</option>
+			<option value=5>5 or more hours ago</option>
+		</select>
+		<br>
+		<input id="clickMe" type="button" value="Update" onclick="getData();" />
+		<div id="results">
+			UV Exposure Risk: <span id="risk"></span><br>
+			Amount of UV in the last 5 hours: <span id="amount"></span>
+		</div>
+	</div>
 	<table id="displayDevices">
 		<caption>Device Data</caption>
 	</table>
@@ -173,9 +218,8 @@
 		
 			var token = window.localStorage.getItem("token");
 			
-			console.log(token);
+			//console.log(token);
 				
-			var elem = document.getElementById("test");
 			var table = document.getElementById("displayDevices");
 					
 			//Create new table based on the new input
@@ -216,8 +260,8 @@
 
 				var length = data["data"].length;
 				
-				console.log(length);
-				console.log(this);
+				//console.log(length);
+				//console.log(this);
 						
 				for (var i = 0; i < length; i++) {
 						
@@ -247,6 +291,95 @@
 			
 			xhr.open("GET", "http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/data/user/all");
 			
+			xhr.setRequestHeader("Content-type", "application/json");
+			xhr.setRequestHeader("x-auth", token);
+
+			// Send the request
+			xhr.send();
+		}
+		
+		function getData(){
+			var token = window.localStorage.getItem("token");
+			//console.log(token);
+			var xhr = new XMLHttpRequest();
+			var temp = document.getElementById("risk");
+			var temp2 = document.getElementById("amount");
+			xhr.addEventListener("load", function() {
+				var sum = 0;
+				var hour = 0;
+				var cnt = 0;
+				var issue = 0;
+				var dumb = 0;
+				var data = JSON.parse(xhr.response);
+				var hr = document.getElementById("time").value;
+				console.log(hr);
+				var amt = document.getElementById("sunscrn").value;
+				console.log(amt);
+				
+				var length = data["data"].length;
+				if(length<30){
+					sum = 0;
+					for (var i = length-1; i >= 0; i--) {
+						if(cnt > 5){
+						hour++;
+						cnt = 0;
+						}
+						if (hour<hr){
+							issue = data["data"][i]["uv"];
+							dumb = (issue * 10)/amt;
+							sum = sum + dumb;
+						}
+						else{
+							issue = data["data"][i]["uv"];
+							dumb = issue * 10;
+							sum = sum + dumb;
+						}
+						cnt++;
+					}
+					temp2.innerHTML = sum;
+					if (sum > 40000){
+						temp.innerHTML = "High";
+					}
+					else if(sum>20000){
+						temp.innerHTML = "Medium";
+					}
+					else{
+						temp.innerHTML = "Low";
+					}
+					sum = 0;
+				}else{
+					sum = 0;
+					for(var i = 1; i>31; i++){
+						if (hour<hr){
+							issue = data["data"][i]["uv"];
+							dumb = (issue * 10)/amt;
+							sum = sum + dumb;;
+						}
+						else{
+							issue = data["data"][i]["uv"];
+							dumb = issue * 10;
+							sum = sum + dumb;
+						}
+					}
+					temp2.innerHTML = sum;
+										temp2.innerHTML = sum;
+					if (sum > 40000){
+						temp.innerHTML = "High";
+					}
+					else if(sum>20000){
+						temp.innerHTML = "Medium";
+					}
+					else{
+						temp.innerHTML = "Low";
+					}
+					sum = 0;
+				}
+				
+
+				table.parentNode.replaceChild(newTable, table);
+			});
+			
+			xhr.open("GET", "http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/data/user/all");
 			xhr.setRequestHeader("Content-type", "application/json");
 			xhr.setRequestHeader("x-auth", token);
 

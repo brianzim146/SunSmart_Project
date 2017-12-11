@@ -1,10 +1,4 @@
 <script>
-	function showMsg(htmlmsg) {
-	  var responseDiv = document.getElementById("apiKeyDisplay");
-	  responseDiv.style.display = "block";
-	  responseDiv.innerHTML = htmlmsg;
-	}
-
 	document.addEventListener("DOMContentLoaded", function() {
 
 	  //If not logged in, require user to login
@@ -12,45 +6,7 @@
 		window.localStorage.setItem("redirect", "LoginPage.html");
 		window.location = "LoginPage.html";
 	  }
-	  
-	  document.getElementById("signOut").addEventListener("click", function() {
-		window.localStorage.removeItem("token");
-		window.location = "index.html";
-	  });
-	
-	  var xhr = new XMLHttpRequest();
-	  var token = window.localStorage.getItem("token");
-	   
-	  if (!token) {
-	      window.localStorage.setItem("redirect", "index.html");
-		  window.localStorage.removeItem("token");
-		  window.location = "index.html";
-	  }
-			  
-	  // Add listener for response
-	  xhr.addEventListener("load", setApiKey);
-
-	  // Set response as JSON
-	  xhr.responseType = "json";
-
-	  // Open a POST connection to the desired endpoint with the 
-	  xhr.open("GET", "http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/apikey/retrieve");
-
-	  // Set header
-	  xhr.setRequestHeader("Content-type", "application/json");
-	  xhr.setRequestHeader("x-auth", token);
-
-	  // Send the request
-	  xhr.send(); 
 	});
-	
-	function setApiKey() {
-		
-		if (this.response.status === 201) {
-			var repsonse = "<p>API Key: " + this.response.apiKey + "</p>";
-			showMsg(response);
-		}
-	};
 </script>
 
 <style>
@@ -142,26 +98,66 @@
         -webkit-border-radius: 10px;
 	}
 	
-	#signOut {
-		float: right;
-		color: #FFFFFF;
-		font-weight: bold;
-		font-size: 100%;
-		background-color: #800000;
-		padding-top: 0.5%;
-		padding-bottom: 0.5%;
-		padding-left: 1%;
-		padding-right: 1%;
+	#displayDevices {
+		display:block;
+		width: 50%;
+		margin-left: 25%;
+		margin-right: 25%;
+        height: 50%;
+		border-collapse: collapse;
+        overflow-y: scroll;
 	}
 	
+	#displayDevices th {
+		width: 20%;
+		font-size: 130%;
+		text-align: center;
+	}
+	
+	#displayDevices td {
+		text-align: center;
+		width: 20%;
+	}
+	
+	#displayDevices caption {
+		font-size: 250%;
+		font-weight: bold;
+		text-decoration: underline;
+		margin-bottom: 3%;
+		margin-top: 3%;
+	}
+	
+	th, td {
+		border: 3px solid black;
+		padding: 5%;
+	}
+	
+	td {
+		font-size: 140%;
+	}
+	
+	#clickMe{
+		margin-left: 25%;
+		margin-right: 25%;
+		margin-bottom: 2%;
+	}
+	
+	.bot{
+		width: 50%;
+		margin-left: 25%;
+		margin-right: 25%;
+		margin-bottom: 1%;
+	}
+	
+	#zp{
+		width: 30%;
+	}
 </style>
 
 <html>
 	<meta charset="UTF-8">
 
 	<h1>Home</h1>
-	
-	<button id="signOut">Sign Out</button>
 	
 	<div id="navBar">
 		<form id="home" action="AccountHomePage.html">
@@ -181,10 +177,6 @@
 		</form>			
 	</div>
 	
-	<div id="apiKeyDisplay">
-		
-	</div>
-	
 	<div class="info">
 		<h3>What are Sunscreens?</h3>
 		<div class="block">The sunscreen aisle of a drugstore offers lots of choices, but which one is right for you? We show you how to find the sunscreen that best fits your lifestyle.
@@ -197,8 +189,105 @@
 			But there are problems with the SPF model: First, no sunscreen, regardless of strength, should be expected to stay effective longer than two hours without reapplication. Second, "reddening" of the skin is a reaction to UVB rays alone and tells you little about what UVA damage you may be getting. Plenty of damage can be done without the red flag of sunburn being raised.
 		</div>
 	</div>
-	<a class="link" href="http://www.skincancer.org/prevention/sun-protection/sunscreen/sunscreens-explained">Source</a>
+	<a class="link" href="http://www.skincancer.org/prevention/sun-protection/sunscreen/sunscreens-explained">Source 	<br><br></a>
+
+	<label for "quantity" class = "bot">Enter a zip code:</label>
+	<input type="number" name="quantity" min="10000" max="99999" id="zp" class = "bot">
+	<br>
+	<input id="clickMe" type="button" value="Update" onclick="updateDevices();" />
+	<table id="displayDevices">
+		<caption>Device Data</caption>
+	</table>
 </html>
+
+<script>
+	//setInterval(updateDevices, 20000);
+		
+			function updateDevices() {
+		
+			var token = window.localStorage.getItem("token");
+			
+			//console.log(token);
+				
+			var table = document.getElementById("displayDevices");
+			var zeep = document.getElementById("zp");
+					
+			//Create new table based on the new input
+			var newTable = document.createElement("table");
+			newTable.setAttribute("id", "displayDevices");
+					
+			var newCaption = document.createElement("caption");
+			var textCaption = document.createTextNode("Data for zip code " + zeep.value);
+					
+			newCaption.appendChild(textCaption);		
+			newTable.appendChild(newCaption);
+					
+			var tr1 = document.createElement("tr");
+					
+			var th1 = document.createElement("th");
+			var th2 = document.createElement("th");
+			var th3 = document.createElement("th");
+					
+			var textTh1 = document.createTextNode("Device Id");
+			var textTh2 = document.createTextNode("Zip Code");
+			var textTh3 = document.createTextNode("UV Reading");
+					
+			th1.appendChild(textTh1);
+			th2.appendChild(textTh2);
+			th3.appendChild(textTh3);
+					
+			tr1.appendChild(th1);
+			tr1.appendChild(th2);
+			tr1.appendChild(th3);
+		
+			newTable.appendChild(tr1);
+			
+			var xhr = new XMLHttpRequest();
+			
+			xhr.addEventListener("load", function() {
+					
+				var data = JSON.parse(xhr.response);  
+
+				var length = data["data"].length;
+				
+				//console.log(length);
+				//console.log(this);
+						
+				for (var i = 0; i < length; i++) {
+						
+					var tr = document.createElement('tr');   
+
+					var td1 = document.createElement('td');
+					var td2 = document.createElement('td');
+					var td3 = document.createElement('td');
+
+					var text1 = document.createTextNode(data["data"][i]["deviceId"]);
+					var text2 = document.createTextNode(data["data"][i]["zip"]);
+					var text3 = document.createTextNode(data["data"][i]["uv"]);
+
+					td1.appendChild(text1);
+					td2.appendChild(text2);
+					td3.appendChild(text3);
+							
+					tr.appendChild(td1);
+					tr.appendChild(td2);
+					tr.appendChild(td3);
+
+					newTable.appendChild(tr);
+				}
+
+				table.parentNode.replaceChild(newTable, table);
+			});
+			
+			xhr.open("GET", "http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/data/" + zeep.value);
+			
+			xhr.setRequestHeader("Content-type", "application/json");
+			xhr.setRequestHeader("x-auth", token);
+
+			// Send the request
+			xhr.send();
+		}
+</script>
 
 
 
