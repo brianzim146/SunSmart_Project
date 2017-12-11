@@ -228,9 +228,9 @@ app.put("/user/update", function(req, res) {
                         User.find({ deviceIds: { $in: [req.body.deviceId] } }, function(err, users) {
                             if (err) return sendResponse(res, 401, false, err);
                             else if (users.length != 0) {
-				return sendResponse(res, 401, false, req.body.deviceId + 
-                                " has already been registered", { alreadyExists: true });
-			    }
+				                return sendResponse(res, 401, false, req.body.deviceId + 
+                                    " has already been registered", { alreadyExists: true });
+                            }
                             else {
                                 // manually insert new device ID
                                 var ids = user.deviceIds;
@@ -352,6 +352,56 @@ app.post("/data/register", function(req, res) {
                 return sendResponse(res, 401, false, "No user could be found with that api key");
             }
         });
+    }
+});
+
+
+
+
+
+app.get("/data/:zip", function(req, res) {
+    // Check if the X-Auth header is set
+    if (!req.headers["x-auth"]) {
+        return res.status(401).json({error: "Missing X-Auth header"});
+    }
+
+    var token = req.headers["x-auth"];
+    try {
+        var decoded = jwt.decode(token, secret);
+
+        User.find({ email: decoded.email }, function(err, users) {
+            if (err) return sendResponse(res, 401, false, err);
+            else if (users.length == 0) return sendResponse(res, 401, false, decoded.email + 
+                " is not a valid user");
+        });
+
+        var zip = req.params.zip;
+
+        Data.find({ zip: zip }, findData);
+
+        function findData(err, dataEntries) {
+            if (err) return sendResponse(res, 401, false, err);
+            else {
+                var responseJSON = {
+                    data: []
+                };
+
+                for (var entry of dataEntries) {
+                    var dataPoint = {
+                        deviceId: entry.deviceId,
+                        uv: entry.uv,
+                        zip: zip
+                    };
+
+                    responseJSON.data.push(dataPoint);
+                }
+
+                return sendResponse(res, 201, true, "Data for " + zip, responseJSON);
+            }
+        }
+    }
+    catch (ex) {
+        return sendResponse(res, 401, false, "Invalid JWT");
     }
 });
 
