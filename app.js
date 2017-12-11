@@ -199,7 +199,7 @@ app.put("/user/update", function(req, res) {
                             if (err) return sendResponse(res, 401, false, err);
                             else {
                                 var responseJSON = {
-                                    token: createToken()
+                                    token: createToken(user.email)
                                 };
 
                                 return sendResponse(res, 201, true, decoded.email + 
