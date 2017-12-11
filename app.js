@@ -74,6 +74,7 @@ var User = mongoose.model("User", userSchema);
 var dataSchema = new mongoose.Schema({
     userId:     String,
     deviceId:   String,
+    time:       { type: Date, default: Date.now },
     uv:         Number,
     zip:        String
 });
@@ -425,9 +426,23 @@ app.get("/data/user/all", function() {
             else return sendResponse(res, 401, false, err);
         }
 
-        function findData(err, dataEntry) {
-            if (dataEntry) {
-                //
+        function findData (err, dataEntries) {
+            if (dataEntries) {
+                var responseJSON = {
+                    data: []
+                };
+
+                for (var entry of dataEntries) {
+                    var dataPoint = {
+                        deviceId: entry.deviceId,
+                        uv: entry.uv,
+                        zip: entry.zip
+                    };
+
+                    responseJSON.data.push(dataPoint);
+                }
+
+                return sendResponse(res, 201, true, "Data for " + decoded.email, responseJSON);
             }
             else return sendResponse(res, 401, false, err);
         }
