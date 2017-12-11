@@ -224,16 +224,23 @@ app.put("/user/update", function(req, res) {
                         if (!req.body.deviceId) {
                             return sendResponse(res, 401, false, "Missing device ID field");
                         }
-
-                        // manually insert new device ID
-                        var ids = user.deviceIds;
-                        ids.push(req.body.deviceId);
-                        user.deviceIds = ids;
-
-            			user.markModified('deviceIds');
                         
-                        return saveData(res, user, req.body.deviceId + " has been added to " + 
-                                user.email + "'s list of devices");
+                        User.find({ deviceIds: req.body.deviceId }, function(err, users) {
+                            if (err) return sendResponse(res, 401, false, err);
+                            else if (users) return sendResponse(res, 401, false, req.body.deviceId + 
+                                " has already been registered", { alreadyExists: true });
+                            else {
+                                // manually insert new device ID
+                                var ids = user.deviceIds;
+                                ids.push(req.body.deviceId);
+                                user.deviceIds = ids;
+
+                                user.markModified('deviceIds');
+                                
+                                return saveData(res, user, req.body.deviceId + " has been added to " + 
+                                    user.email + "'s list of devices");
+                            }
+                        });
                     }
 
 
@@ -251,7 +258,8 @@ app.put("/user/update", function(req, res) {
                                 user.email + "'s list of devices");
                         }
                         else {
-                            return sendResponse(res, 401, false, req.body.deviceId + " was not found in your device list");
+                            return sendResponse(res, 401, false, req.body.deviceId + 
+                                " was not found in your device list", { alreadyExists: true });
                         }
                     }
 
