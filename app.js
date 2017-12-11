@@ -343,6 +343,12 @@ app.put("/user/update", function(req, res) {
 
 app.post("/data/register", function(req, res) {
     // check for all fields
+    if (!req.body.uv) console.log("missing uv");
+    if (!req.body.latitude) console.log("missing latitude");
+    if (!req.body.longitude) console.log("missing longitude");
+    if (!req.body.apiKey) console.log("missing apiKey");
+    if (!req.body.deviceId) console.log("missing deviceId");
+
     if (!req.body.uv || !req.body.latitude || !req.body.longitude || 
         !req.body.apiKey || !req.body.deviceId) {
         return sendResponse(res, 401, false, "Missing input field(s)");
@@ -416,12 +422,11 @@ app.get("/data/user/all", function(req, res) {
     var token = req.headers["x-auth"];
     try {
         var decoded = jwt.decode(token, secret);
-	console.log(decoded.email);
+
         User.findOne({ email: decoded.email }, findUser);
 
         function findUser(err, user) {
             if (user) {
-		console.log(user);
                 Data.find({ userId: user._id }, findData);
             }
             else return sendResponse(res, 401, false, err);
@@ -433,10 +438,7 @@ app.get("/data/user/all", function(req, res) {
                     data: []
                 };
 
-		console.log(dataEntries);
-
                 for (var entry of dataEntries) {
-console.log("wht the hell");
                     var dataPoint = {
                         deviceId: entry.deviceId,
                         uv: entry.uv,
@@ -444,7 +446,6 @@ console.log("wht the hell");
                     };
 
                     responseJSON.data.push(dataPoint);
-		    console.log("testing...");
                 }
 
                 return sendResponse(res, 201, true, "Data for " + decoded.email, responseJSON);
