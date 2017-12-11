@@ -1,11 +1,13 @@
 <script>
 	document.addEventListener("DOMContentLoaded", function() {
 
-	  //If not logged in, require user to login
-	  if( !window.localStorage.getItem("token")) {
+	//If not logged in, require user to login
+	if( !window.localStorage.getItem("token")) {
 		window.localStorage.setItem("redirect", "LoginPage.html");
 		window.location = "LoginPage.html";
 	  }
+	  
+	  updateDevices();
 	});
 </script>
 
@@ -76,6 +78,43 @@
 		border: #000000 solid 100%;
 	}
 	
+	#displayDevices {
+		display:block;
+		width: 50%;
+		margin-left: 25%;
+		margin-right: 25%;
+        height: 50%;
+		border-collapse: collapse;
+        overflow-y: scroll;
+	}
+	
+	#displayDevices th {
+		width: 20%;
+		font-size: 130%;
+		text-align: center;
+	}
+	
+	#displayDevices td {
+		text-align: center;
+		width: 20%;
+	}
+	
+	#displayDevices caption {
+		font-size: 250%;
+		font-weight: bold;
+		text-decoration: underline;
+		margin-bottom: 3%;
+		margin-top: 3%;
+	}
+	
+	th, td {
+		border: 3px solid black;
+		padding: 5%;
+	}
+	
+	td {
+		font-size: 140%;
+	}	
 </style>
 
 <html>
@@ -101,5 +140,96 @@
 		</form>			
 	</div>
 	
+	<table id="displayDevices">
+		<caption>Device Data</caption>
+	</table>
+	
+	<script>
+		setInterval(updateDevices, 20000);
+		
+		function updateDevices() {
+		
+			var token = window.localStorage.getItem("token");
+			
+			console.log(token);
+				
+			var elem = document.getElementById("test");
+			var table = document.getElementById("displayDevices");
+					
+			//Create new table based on the new input
+			var newTable = document.createElement("table");
+			newTable.setAttribute("id", "displayDevices");
+					
+			var newCaption = document.createElement("caption");
+			var textCaption = document.createTextNode("Device Data");
+					
+			newCaption.appendChild(textCaption);		
+			newTable.appendChild(newCaption);
+					
+			var tr1 = document.createElement("tr");
+					
+			var th1 = document.createElement("th");
+			var th2 = document.createElement("th");
+			var th3 = document.createElement("th");
+					
+			var textTh1 = document.createTextNode("Device Id");
+			var textTh2 = document.createTextNode("Zip Code");
+			var textTh3 = document.createTextNode("UV Reading");
+					
+			th1.appendChild(textTh1);
+			th2.appendChild(textTh2);
+			th3.appendChild(textTh3);
+					
+			tr1.appendChild(th1);
+			tr1.appendChild(th2);
+			tr1.appendChild(th3);
+		
+			newTable.appendChild(tr1);
+			
+			var xhr = new XMLHttpRequest();
+			
+			xhr.addEventListener("load", function() {
+					
+				var data = JSON.parse(xhr.response);  
 
+				var length = data["data"].length;
+				
+				console.log(length);
+				console.log(this);
+						
+				for (var i = 0; i < length; i++) {
+						
+					var tr = document.createElement('tr');   
+
+					var td1 = document.createElement('td');
+					var td2 = document.createElement('td');
+					var td3 = document.createElement('td');
+
+					var text1 = document.createTextNode(data["data"][i]["deviceId"]);
+					var text2 = document.createTextNode(data["data"][i]["zip"]);
+					var text3 = document.createTextNode(data["data"][i]["uv"]);
+
+					td1.appendChild(text1);
+					td2.appendChild(text2);
+					td3.appendChild(text3);
+							
+					tr.appendChild(td1);
+					tr.appendChild(td2);
+					tr.appendChild(td3);
+
+					newTable.appendChild(tr);
+				}
+
+				table.parentNode.replaceChild(newTable, table);
+			});
+			
+			xhr.open("GET", "http://ec2-34-230-89-124.compute-1.amazonaws.com:3000/data/user/all");
+			
+			xhr.setRequestHeader("Content-type", "application/json");
+			xhr.setRequestHeader("x-auth", token);
+
+			// Send the request
+			xhr.send();
+		}
+	</script>
 </html>

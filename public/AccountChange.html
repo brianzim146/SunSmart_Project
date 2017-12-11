@@ -7,6 +7,34 @@
 		window.location = "LoginPage.html";
 	  }
 	});
+	
+	function changeEmail() {
+		var removeContent = document.getElementById("password");
+		removeContent.style.display = "none";
+		
+		var removeTabLink = document.getElementById("left");
+		removeTabLink.className = removeTabLink.className.replace(" active", "");
+		
+		var showContent = document.getElementById("email");
+		showContent.style.display = "block";
+		//removeContent.style.display = "block";
+		removeTabLink.className += " active";
+		
+		console.log("Email");
+	}
+	
+	function changePassword() {
+		var removeContent = document.getElementById("email");
+		removeContent.style.display = "none";
+		
+		var removeTabLink = document.getElementById("right");
+		removeTabLink.className = removeTabLink.className.replace(" active", "");
+		
+		var showContent = document.getElementById("password");
+		showContent.style.display = "block";
+		removeContent.className += " active";
+		console.log("Password");
+	}	
 </script>
 
 <style>
@@ -76,6 +104,76 @@
 		border: #000000 solid 100%;
 	}
 	
+	#change {
+		background: url("https://images.freecreatives.com/wp-content/uploads/2016/02/Amazing-Free-Navy-Blue-Texture-Background.jpg") no-repeat fixed;
+		-webkit-background-size: cover;
+		-moz-background-size: cover;
+		-o-background-size: cover;
+		background-size: cover;
+		font-family: "Georgia"; 
+		height: 50%;
+		width: 90%;
+		margin-left: 5%;
+		position: absolute;
+	}
+	
+	#tabs {
+		margin-left: 35%;
+		margin-right: 30%;
+	}
+	
+	.tablinks {
+		margin-top: 3%;
+		float: center;
+		text-color: #000000;
+		background-color: #FFFFFF;
+		border: #000000 solid 3px;
+		padding-right: 5%;
+		padding-left: 5%;
+		padding-top: 3%;
+		padding-bottom: 3%;
+		display: inline;
+		position: relative
+		align: center;
+		font-weight: bold;
+		font-size: 110%;
+	}
+	
+	.tablinks:hover {
+		background-color: #90EE90;
+		color: #000000;
+		font-weight: bold;
+	}
+	
+	.insideDiv {
+		color: #FFFFFF;
+	}
+	
+	.tabContent {
+		display: none;
+	}
+	
+	.wrapper {
+		background-color: #FFFFFF;
+		border: #000000 solid 5%;
+		width: 50%;
+		padding: 2%;
+		margin-left: 25%;
+		margin-right: 25%;
+		margin-top: 4%;
+	}
+	
+	label {
+		width: 100%;
+		margin-bottom: -5%;
+	}
+	
+	input {
+		width: 100%;
+	}
+	
+	
+	
 </style>
 
 <html>
@@ -101,5 +199,25 @@
 		</form>			
 	</div>
 	
-
+	<div id="change">
+		<div id="tabs">
+			<button class="tablinks" id="left" onclick="changeEmail()">Change Email</button>
+			<button class="tablinks" id="right" onclick="changePassword()">Change Password</button>
+		</div>
+		<div id="email" class="tabContent">
+			<!--<p class="insideDiv">Hello</p>-->
+			<div class="wrapper">
+				<label>New Email</p>
+				<input id="newEmail" type="text" placeholder="Enter New Email" value="newEmail">
+				<label>Confirm New Email</p>
+				<input id="newPassword" type="text" placeholder="Enter New Password" value="newPassword">
+			</div>		
+		</div>
+		<div id="password" class="tabContent">
+			<!--<p class="insideDiv">Goodbye</p>-->
+			<div class="wrapper">
+				<p>HERE</p>
+			</div>
+		</div> 
+	</div>
 </html>

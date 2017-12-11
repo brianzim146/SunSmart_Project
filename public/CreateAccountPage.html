@@ -58,6 +58,7 @@
 	function signUpResponse() {
 	  var responseDiv = document.getElementById('ServerResponse');
 	  var responseHTML = "";
+	  var exsists = this.response.alreadyExsists;
 
 	  // 200 is the response code for a successful GET request
 	  if (this.status === 201) {
@@ -74,10 +75,15 @@
 		}
 	  }
 	  else {
-		// Use a span with dark red text for errors
-		responseHTML = "<p>Error: " + this.response.error + ",/p>";
-		showMsg(responseHTML);
-		console.log("Error, wrong response code");
+		if (this.response.alreadyExists == true) {
+			responseHTML = "<p>This email address already exsits!</p>";
+			showMsg(responseHTML);
+		} else {
+			// Use a span with dark red text for errors
+			responseHTML = "<p>Error: " + this.response.error + "</p>";
+			showMsg(responseHTML);
+			console.log("Error, wrong response code");
+		}
 	  }
 
 	  console.log("finished");
@@ -97,7 +103,6 @@
 		});	  
 	});
 </script>
-
 
 <style>
 	body {
