@@ -239,7 +239,6 @@ app.put("/user/update", function(req, res) {
         var decoded = jwt.decode(token, secret);
 
         User.find({ email: decoded.email }, function(err, users) {
-	    console.log("hey");
             for (var user of users) {
                 console.log(user);
             }
@@ -262,8 +261,12 @@ app.put("/user/update", function(req, res) {
                         }
 
                         user.email = req.body.newEmail;
+                        console.log(user._id);
+                        user.save(function(err, user1) {
+                            console.log(user1._id);
+                        });
 
-                        return saveData(res, user, "New email has been set");
+                        //return saveData(res, user, "New email has been set");
                     }
 
                     else if (req.body.operation == CHANGE_PASSWORD) {
