@@ -46,23 +46,6 @@ app.use(function (req, res, next) {
 
 
 
-// var gpsSchema = new mongoose.Schema({
-//     time:   { type: Date, default: Date.now },
-//     latitude:   String,
-//     longitude:  String
-// });
-
-// var GPS_Entry = mongoose.model("GPS_Entry", gpsSchema);
-
-
-
-// var uvSchema = new mongoose.Schema({
-//     time:   { type: Date, default: Date.now },
-//     value:  Number
-// });
-
-// var UV_Entry = mongoose.model("UV_Entry", uvSchema);
-
 
 
 var userSchema = new mongoose.Schema({
@@ -91,13 +74,13 @@ var Data = mongoose.model("Data", dataSchema);
 
 
 
-/* required inputs:
- *      email: user's email
- *      password:   user
- */
+// registers a new user in the syste,given their email, password, and their first device ID.
+// if the email already exists, or the password is not strong enough then an error message
+// is returned to the browser
 app.post("/user/register", function(req, res) {
     if (req.body.email && req.body.password && req.body.deviceId) {
 
+        // check password strength
         if (!strongPassword(req.body.password)) {
             return sendResponse(res, 401, false, "Password not strong enough");
         }
@@ -106,11 +89,13 @@ app.post("/user/register", function(req, res) {
             User.findOne({ email: req.body.email }, function(err, user) {
                 if (err) return sendResponse(res, 401, false, err);
                 
+                // if user already exists, then send back error message
                 else if (user) return sendResponse(res, 401, false, "User " + user.email + 
                     " already exists", { alreadyExists: true });
 
                 // user does not already exist -- good
                 else {
+                    // create user object
                     var user = new User({
                         email: req.body.email,
                         password: req.body.password,
@@ -130,8 +115,8 @@ app.post("/user/register", function(req, res) {
                                 redirect: "AccountHomePage.html"
                             };
                             
-                            return sendResponse(res, 201, true, user.email + " has registered device " + 
-                                user.deviceIds[0], responseJSON);
+                            return sendResponse(res, 201, true, user.email + 
+                                " has registered device " + user.deviceIds[0], responseJSON);
                         }
                     });
                 }
@@ -145,7 +130,8 @@ app.post("/user/register", function(req, res) {
 
 
 
-
+// login user (given email and password) and send back token that authorizes 
+// them on future requests
 app.post("/user/login", function(req, res) {
     
     if (req.body.email && req.body.password) {
@@ -153,16 +139,21 @@ app.post("/user/login", function(req, res) {
             function(err, user) {
                 if (err) return sendResponse(rs, 401, false, err);
                 
+                // get user and create their authorization token
                 else if (user) {
                     var responseJSON = {
                         token: createToken(user.email),
                         redirect: "AccountHomePage.html"
                     };
 
-                    return sendResponse(res, 201, true, "Logged in as " + user.email, responseJSON);
+                    return sendResponse(res, 201, true, "Logged in as " + 
+                        user.email, responseJSON);
                 }
 
-                else return sendResponse(res, 401, false, "Email or password are incorrect");
+                // could not find a user with that email/password combo
+                // in system
+                else return sendResponse(res, 401, false, 
+                    "Email or password are incorrect");
             }   
         );
     }
@@ -173,7 +164,8 @@ app.post("/user/login", function(req, res) {
 
 
 
-
+// updates user information. Browser must provide an 'operation'
+// field that tells the endpoint what needs to be updated
 app.put("/user/update", function(req, res) {
 
     // Check if the X-Auth header is set
@@ -234,6 +226,7 @@ app.put("/user/update", function(req, res) {
                             return sendResponse(res, 401, false, "Missing device ID field");
                         }
                         
+                        // check if the device ID already exists
                         User.find({ deviceIds: { $in: [req.body.deviceId] } }, function(err, users) {
                             if (err) return sendResponse(res, 401, false, err);
                             else if (users.length != 0) {
@@ -262,6 +255,8 @@ app.put("/user/update", function(req, res) {
 
                         var index = user.deviceIds.indexOf(req.body.deviceId);
 
+                        // index = -1 indicates that the element does not exist
+                        // in list
                         if (index > -1) {
                             user.deviceIds.splice(index, 1);
 
@@ -470,7 +465,7 @@ app.get("/data/user/all", function(req, res) {
 
 
 
-app.get("/api/retrieve", function(req, res) {
+app.get("/apikey/retrieve", function(req, res) {
     // Check if the X-Auth header is set
     if (!req.headers["x-auth"]) {
         return res.status(401).json({error: "Missing X-Auth header"});
